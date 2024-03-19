@@ -40,6 +40,9 @@
 !	#9	F7.2	- Window width ('wwid' computed) [km/s]
 !	#10	F7.2    - Velocity resolution of the spectrum ('R%HEAD%SPE%VRES' absolute value) [km/s]
 !
+! REVISION:
+!	Check 'sigma' value is correct when computing the uncertainty of the area (earea)
+!
 ! FUTURE WORK:
 !
 !
@@ -73,12 +76,9 @@ let mwin[1] &2
 let mwin[2] &3
 
 !*** AUX Variables:
-define int aux1
-define real marea
-
-define real earea wwid nchan lchan rchan marea barea bsigma
+define int aux1 cont pch bch
+define real marea earea wwid nchan
 define character*16 outf
-define int cont pch bch
 
 !*** PROGRAM BODY:
 !* Initial settings:
@@ -144,10 +144,6 @@ let wwid abs(SET%LAS%WIND2[1]-SET%LAS%WIND1[1])		!Width of the selected window
 let nchan wwid/abs(R%HEAD%SPE%VRES)			!Number of integrated channels
 let earea sqrt(nchan)*sigma*abs(R%HEAD%SPE%VRES)	!Unc. in integrated intensity. Note: unc. for 1 channel is rms*vres
 
-!!!! Working here
-
-
-
 !*** WRITE OUPUT:
 let outf 'lfre' /format f15.5
 for i 1 to 15
@@ -163,8 +159,8 @@ let bch bch+1
 let cont pch+1
 let pch pch-1
 sic out 'outf[bch:pch]'p'outf[cont:]'.dat append
-say 'lfre' 'R%HEAD%CAL%BEEFF' 'R%HEAD%CAL%FOEFF' 'barea' -
-'earea' 'bsigma' 'lwin' 'rwin' 'wwid' 'R%HEAD%SPE%VRES' -
+say 'lfre' 'R%HEAD%CAL%BEEFF' 'R%HEAD%CAL%FOEFF' 'marea' -
+'earea' 'sigma' 'mwin[1]' 'mwin[2]' 'wwid' 'R%HEAD%SPE%VRES' -
 /format F12.4 F6.2 F6.2 F12.4 F12.4 F12.4 F7.2 F7.2 -
 F7.2 F7.2
 sic out
