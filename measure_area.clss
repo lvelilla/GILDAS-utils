@@ -1,0 +1,164 @@
+! Programmed: Luis Velilla-Prieto 
+! Date: 29/Feb/2024
+!
+! HELP:
+! Routine to measure the integrated intensity of a line with "base" command
+! It is based on CLASS internal language and functionalities.
+!
+! USAGE:
+! 	@ measure_area lfre lwin rwin 
+! 
+! SETTINGS:
+!	lfre: Rest laboratory frequency of the line
+!	lwin: Lower integration limit (in velocity units km/s) *see note_1
+!	rwin: Upper integration limit (in velocity units km/s) *see note_1
+!
+! RESULT:
+!	Creates a file with name based on "lfre" containing the results  
+!       It will append entries if the file exists.
+!
+! NOTES:
+! Note_1: If the velocity range is 0 0 the window will be selected with cursor.
+! Note_2: Systemic velocity is not manipulated on the input spectra.
+! Note_3: forward efficiencies are not always correctly saved in the headers, be careful.
+! Note_4: the routine expects a spectrum with an already fitted baseline
+!
+! OUPUT:
+!
+!	#1	F12.4   - Input rest frequency ('ufre' input) [MHz]
+!	#2	F6.2    - Main beam efficiency ('R%HEAD%CAL%BEEFF': Beff)
+!	#3	F6.2    - Forward efficiency ('R%HEAD%CAL%FOEFF': Feff)
+!	#4	F12.4   - Integrated intensity ('barea' after base command) [K*km/s]
+!	#5	F12.4   - Uncertainty of the integrated intensity ('earea' computed) [K*km/s]
+!	#6	F12.4   - RMS ('bsigma' after base command) [K]
+!	#7-8	2xF7.2  - Velocity range for that integrated intensity ('lwin' 'rwin' input) [km/s]
+!	#9	F7.2	- Window width ('wwid' computed) [km/s]
+!	#10	F7.2    - Velocity resolution of the spectrum ('R%HEAD%SPE%VRES' absolute value) [km/s]
+!
+! FUTURE WORK:
+!
+!
+!
+!*****************
+!* START PROGRAM *
+!*****************
+!
+!*** Initialisation:
+clear
+set win none
+set mask none
+sic out
+pen /def
+pen 1 /col red /dash 1 /wei 2
+pen 2 /col purple /dash 1 /wei 2
+pen 3 /col dodger_blue /dash 1 /wei 2
+pen 4 /col indian_red /dash 1 /wei 2
+pen 5 /col medium_sea_green /dash 1 /wei 2
+pen 6 /col magenta /dash 2 /wei 2
+pen 7 /col turquoise /dash 2 /wei 2
+pen 9 /col grey /dash 1 /wei 2
+pen 14 /col purple /dash 2 /wei 2
+pen 0 /dash 1 /wei 2
+
+!*** INPUT Variables:
+define double lfre
+define real lwin rwin
+let lfre &1
+let lwin &2
+let rwin &3
+
+!*** AUX Variables:
+define real earea wwid nchan lchan rchan marea barea bsigma
+define character*16 outf
+define int cont pch bch
+
+!*** PROGRAM BODY:
+set unit v f
+modify frequency 'lfre'
+set mode x 'velocity-150' 'velocity+150'
+plot
+pause "Set anything now: resolution, masks, X-range..."
+say ""
+say "Select windows around all the lines. Next is base fitting..."
+say ""
+set window
+draw win
+base 0 /plot
+if (lwin.eq.0).and.(rwin.eq.0) then
+	say ""
+	say "Select the limits of the window that you want to measure"
+	say ""
+	set win
+	if SET%LAS%WIND1[1].lt.SET%LAS%WIND2[1] then
+		let lwin SET%LAS%WIND1[1]
+		let rwin SET%LAS%WIND2[1]
+	else
+		let lwin SET%LAS%WIND2[1]
+		let rwin SET%LAS%WIND1[1]
+	endif
+else
+	set win 'lwin' 'rwin'
+endif
+base last /plot
+let wwid abs(SET%LAS%WIND2[1]-SET%LAS%WIND1[1])		!Width of the selected window
+let nchan wwid/abs(R%HEAD%SPE%VRES)			!Number of integrated channels
+let earea sqrt(nchan)*sigma*abs(R%HEAD%SPE%VRES)	!Unc. in integrated intensity. Note: unc. for 1 channel is rms*vres
+let barea area
+let bsigma sigma
+let lchan int(R%HEAD%SPE%RCHAN-abs((rwin-velocity)/R%HEAD%SPE%VRES))
+let rchan int(R%HEAD%SPE%RCHAN+abs((velocity-lwin)/R%HEAD%SPE%VRES))
+swap
+plot
+
+!*** WRITE OUPUT:
+let outf 'lfre' /format f15.5
+for i 1 to 15
+	if outf[i:i].EQ." " then
+		let bch i
+	endif
+	if outf[i:i].EQ."." then
+		let pch i
+		break
+	endif
+next
+let bch bch+1
+let cont pch+1
+let pch pch-1
+sic out 'outf[bch:pch]'p'outf[cont:]'.dat append
+say 'lfre' 'R%HEAD%CAL%BEEFF' 'R%HEAD%CAL%FOEFF' 'barea' -
+'earea' 'bsigma' 'lwin' 'rwin' 'wwid' 'R%HEAD%SPE%VRES' -
+/format F12.4 F6.2 F6.2 F12.4 F12.4 F12.4 F7.2 F7.2 -
+F7.2 F7.2
+sic out
+
+!*** SAVE PLOT:
+clear
+set format brief
+greg\set char 0.5
+greg\set box_loc 4 24 9.4 19.4
+greg\limi 'velocity-(2*wwid)' 'velocity+(2*wwid)' user_ymin user_ymax
+set mode x velocity-(2*wwid) velocity+(2*wwid)
+plot
+pen 9
+greg\histo rx['lchan':'rchan'] ry['lchan':'rchan'] /fill /base
+pen 0
+spec
+greg\draw relocate velocity user_ymin /user
+pen 14
+greg\draw line velocity user_ymax /user
+pen 2
+greg\draw text 0.4 -0.6 "Vsys= "'nint(10*velocity/10)'" km/s" 3 /box 8
+pen 3
+greg\draw text 0.5 -0.4 "Integration win.= ["'nint(10*SET%LAS%WIND1[1])/10'" : "'nint(10*SET%LAS%WIND2[1])/10'"] km/s" 3 /box 7
+greg\draw text 0.5 -1.0 "RMS= "'nint(sigma*10000)|10'" mK; \gDV= "'nint(100*R%HEAD%SPE%VRES)/100'" km/s"  3 /box 7
+greg\draw text 0.5 -1.6 "AREA= "'nint(area*1000)|1000'" \s+ "'nint(1000*earea)/1000'" K*km/s"  3 /box 7
+pen 0
+draw mask
+hard 'int(lfre)'_base.eps /dev eps color /overwrite
+greg\set char 0.6
+
+
+
+
+
+
