@@ -2,8 +2,13 @@
 ! Date: 29/Feb/2024
 !
 ! HELP:
-! Routine to measure the integrated intensity of a line with "base" command
-! It is based on CLASS internal language and functionalities.
+! Routine to measure the integrated intensity of a spectral line in a 30m spectral file type
+! It works and it is based on CLASS internal language and functionalities.
+! The integrated intensity is calculated by adding up the area of each rectangle, evaluated
+! from two positions in the spectrum that are given as input by the user, and sweeping every
+! channel between the two limits. The area is calculated simply as:
+! Total area = Sum (from ch1 to ch2) [channel_width * temperature_at_evaluated_channel]  
+! Expected units should be K*km/s but note that this will depend on the input spectrum units
 !
 ! USAGE:
 ! 	@ measure_area lfre lwin rwin 
@@ -62,17 +67,21 @@ pen 0 /dash 1 /wei 2
 
 !*** INPUT Variables:
 define double lfre
-define real lwin rwin
+define real mwin[2] mch[2]
 let lfre &1
-let lwin &2
-let rwin &3
+let mwin[1] &2
+let mwin[2] &3
 
 !*** AUX Variables:
+define int aux1
+define real marea
+
 define real earea wwid nchan lchan rchan marea barea bsigma
 define character*16 outf
 define int cont pch bch
 
 !*** PROGRAM BODY:
+!* Initial settings:
 set unit v f
 modify frequency 'lfre'
 set mode x 'velocity-150' 'velocity+150'
@@ -84,31 +93,60 @@ say ""
 set window
 draw win
 base 0 /plot
-if (lwin.eq.0).and.(rwin.eq.0) then
+!* Select integration limits based on draw or input values
+if (mwin[1].eq.0).and.(mwin[2].eq.0) then
 	say ""
 	say "Select the limits of the window that you want to measure"
 	say ""
 	set win
-	if SET%LAS%WIND1[1].lt.SET%LAS%WIND2[1] then
-		let lwin SET%LAS%WIND1[1]
-		let rwin SET%LAS%WIND2[1]
-	else
-		let lwin SET%LAS%WIND2[1]
-		let rwin SET%LAS%WIND1[1]
-	endif
 else
-	set win 'lwin' 'rwin'
+	set win 'mwin[1]' 'mwin[2]'
 endif
-base last /plot
+!* Calculate in num of channels the distance between each limit and the reference channel:
+let mch[1] abs((r%head%spe%voff-set%las%wind1[1])/(r%head%spe%vres))
+let mch[2] abs((r%head%spe%voff-set%las%wind2[1])/(r%head%spe%vres))
+!* Different cases if: velocity decreases/increases with channel and limits are <> than ref. channel
+for i 1 to 2
+	!* Case 1: velocity decreases with channel
+	if (r%head%spe%vres.lt.0) then 
+		!* Sub-case: the limit has vel>vref	
+		if (mwin[i].gt.r%head%spe%voff) then
+			let mch[i] int(r%head%spe%rchan-mch[i])
+		!* Sub-case: the limit has vel<vref
+		else
+			let mch[i] int(r%head%spe%rchan+mch[i])
+		endif
+	!* Case 2: velocity increases with channel
+	else
+		!* Sub-case: the limit has vel>vref	
+		if (mwin[i].gt.r%head%spe%voff) then
+			let mch[i] int(r%head%spe%rchan+mch[i])
+		!* Sub-case: the limit has vel<vref
+		else
+			let mch[i] int(r%head%spe%rchan-mch[i])
+		endif
+	endif
+next
+!* Now we will force limits so mch[1] is < mch[2]
+if mch[1].gt.mch[2] then
+	let aux1 mch[1]
+	let mch[1] mch[2]
+	let mch[2] aux1
+endif
+!* Compute the integrated area:
+let marea 0
+for i mch[1] to mch[2]
+	let marea ry[i]+marea
+next
+let marea marea*abs(r%head%spe%vres)
+!* Compute the uncertainty:
 let wwid abs(SET%LAS%WIND2[1]-SET%LAS%WIND1[1])		!Width of the selected window
 let nchan wwid/abs(R%HEAD%SPE%VRES)			!Number of integrated channels
 let earea sqrt(nchan)*sigma*abs(R%HEAD%SPE%VRES)	!Unc. in integrated intensity. Note: unc. for 1 channel is rms*vres
-let barea area
-let bsigma sigma
-let lchan int(R%HEAD%SPE%RCHAN-abs((rwin-velocity)/R%HEAD%SPE%VRES))
-let rchan int(R%HEAD%SPE%RCHAN+abs((velocity-lwin)/R%HEAD%SPE%VRES))
-swap
-plot
+
+!!!! Working here
+
+
 
 !*** WRITE OUPUT:
 let outf 'lfre' /format f15.5
