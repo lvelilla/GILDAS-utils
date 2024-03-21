@@ -177,7 +177,7 @@ greg\limi 'velocity-(2*wwid)' 'velocity+(2*wwid)' user_ymin user_ymax
 set mode x velocity-(2*wwid) velocity+(2*wwid)
 plot
 pen 9
-greg\histo rx['lchan':'rchan'] ry['lchan':'rchan'] /fill /base
+greg\histo rx['mch[1]':'mch[2]'] ry['mch[1]':'mch[2]'] /fill /base
 pen 0
 spec
 greg\draw relocate velocity user_ymin /user
@@ -188,7 +188,7 @@ greg\draw text 0.4 -0.6 "Vsys= "'nint(10*velocity/10)'" km/s" 3 /box 8
 pen 3
 greg\draw text 0.5 -0.4 "Integration win.= ["'nint(10*SET%LAS%WIND1[1])/10'" : "'nint(10*SET%LAS%WIND2[1])/10'"] km/s" 3 /box 7
 greg\draw text 0.5 -1.0 "RMS= "'nint(sigma*10000)|10'" mK; \gDV= "'nint(100*R%HEAD%SPE%VRES)/100'" km/s"  3 /box 7
-greg\draw text 0.5 -1.6 "AREA= "'nint(area*1000)|1000'" \s+ "'nint(1000*earea)/1000'" K*km/s"  3 /box 7
+greg\draw text 0.5 -1.6 "AREA= "'nint(marea*1000)|1000'" \s+ "'nint(1000*earea)/1000'" K*km/s"  3 /box 7
 pen 0
 draw mask
 hard 'int(lfre)'_base.eps /dev eps color /overwrite
