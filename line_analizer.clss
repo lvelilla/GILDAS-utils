@@ -3,30 +3,36 @@
 ! Date: 21/Mar/2024
 !
 ! HELP:
-! This macro performs spectral line measuring: integrated intensity, fwzi, peak
-! temperature, gaussian fitting, and/or shell fitting
-! Results are written into a file
+! This script performs a spectral line analysis to measure several parameters: 
+! Widths: FWZI, FWHM
+! Peak temperatures: 1) Max along profile 2)Vsys-3 channel average
+! Velocity Integrated intensity (full width): 1) adding up rectangles 2) BASE functionality  
+! Fitting: gaussian fitting, and/or shell fitting
 ! It is based on CLASS internal language and functionalities.
 ! 
 ! USAGE:
-! @line_analizer lfre lwin rwin method
+! @line_analizer ufre lwin rwin method
 !
 ! INPUT:
-! lfre: Rest laboratory frequency of the line
-! lwin: Lower integration limit (in velocity units km/s) *see note_1
-! rwin: Upper integration limit (in velocity units km/s) *see note_1
+! ufre: Rest laboratory frequency of the line
+! lwin: Guess in velocity units for the lower limit of the line (use 3 sigma criteria)
+! rwin: Guess in velocity units for the upper limit of the line (use 3 sigma criteria)
+! method: fitting method can be "g" for gaussian and "s" for shell
 !
 ! RESULT:
 ! Creates a file with name based on "lfre" containing the results  
 ! It will append entries if the file exists.
 !
 ! NOTES:
-! Note_1: If the velocity range is 0 0 the window will be selected with cursor.
-! Note_2: Systemic velocity is not manipulated on the input spectra.
-! Note_3: forward efficiencies are not always correctly saved in the headers, be careful, and consider if it is in Ta*, Tmb, Jy/K units
-! Note_4: the routine expects a spectrum with an already fitted baseline but you have a chance to subtract one
+! Be carefull in case there are line blends
 !
-! OUPUT:
+! Note_1: If the velocity range is 0 0 lwin/rwin will be selected with cursor.
+! Note_2: Systemic velocity is not manipulated on the input spectra.
+! Note_3: forward efficiencies are not always correctly saved in the headers
+! Note_4: consider the units of the input spectrum it is in Ta*, Tmb, Jy/K units for your results
+! Note_5: the routine expects a spectrum with an already fitted baseline but you have a chance to subtract one
+!
+! OUPUT: CARE ABOUT UNITS K vs MHz and K vs km/s are expected
 !
 !	#1	F12.4   - Input rest frequency ('ufre' input) [MHz]
 !	#2	F6.2    - Main beam efficiency ('R%HEAD%CAL%BEEFF': Beff)
@@ -38,29 +44,7 @@
 !	#9	F7.2	- Window width ('wwid' computed) [km/s]
 !	#10	F7.2    - Velocity resolution of the spectrum ('R%HEAD%SPE%VRES' absolute value) [km/s]
 !
-! REVISION:
-!	1) SIGMA value: Check if 'sigma' value is correct when computing the uncertainty of the area (earea)
-!	R%HEAD%BAS%SIGFI or SIGMA point at the same internal CLASS values that are saved in the header
-!	But this value will not change if you carry out a SMOOTH
-!	It will updated upon a new baseline computation
-!
-! FUTURE WORK:
-!
-!
-!
-!
-! NOTES:
-! Note_1: If the velocity range is 0 0 the window will be selected with cursor.
-! Note_2: corrected systemic velocity is needed on the input spectra.
-! Note_3: Output units may change if different plotting units were used.
-! Note_4: estimated fwzi will be wrong if there is a blend.
-! Note_5: forward efficiencies are not always saved in the headers, be careful.
-! Note_6: header will be wrong if different fit methods are saved in the same
-!		  file.
-!
 ! OUPUT:
-!	A12		- Name of the source ('R%HEAD%POS%SOURC')
-!	A12		- Name of the telescope ('R%HEAD%GEN%TELES')
 !	F12.4	- Input rest frequency ('ufre' input) [MHz]
 !	F6.1	- Nominal systemic velocity of the source ('R%HEAD%SPE%VOFF') [km/s]
 !	F6.2	- Main beam efficiency ('R%HEAD%CAL%BEEFF': Beff)
