@@ -35,7 +35,7 @@
 !	#3	F6.2    - Forward efficiency ('R%HEAD%CAL%FOEFF': Feff)
 !	#4	F12.4   - Integrated intensity ('barea' after base command) [K*km/s]
 !	#5	F12.4   - Uncertainty of the integrated intensity ('earea' computed) [K*km/s]
-!	#6	F12.4   - RMS ('bsigma' after base command) [K]
+!	#6	F12.4   - RMS ('sigma' after base command) [K]
 !	#7-8	2xF7.2  - Velocity range for that integrated intensity ('lwin' 'rwin' input) [km/s]
 !	#9	F7.2	- Window width ('wwid' computed) [km/s]
 !	#10	F7.2    - Velocity resolution of the spectrum ('R%HEAD%SPE%VRES' absolute value) [km/s]
@@ -162,8 +162,8 @@ let bch bch+1
 let cont pch+1
 let pch pch-1
 sic out 'outf[bch:pch]'p'outf[cont:]'.dat append
-say 'lfre' 'R%HEAD%CAL%BEEFF' 'R%HEAD%CAL%FOEFF' 'marea' -
-'earea' 'sigma' 'mwin[1]' 'mwin[2]' 'wwid' 'R%HEAD%SPE%VRES' -
+say 'lfre' 'R%HEAD%CAL%BEEFF' 'R%HEAD%CAL%FOEFF' 'marea' 'earea' -
+'sigma' 'set%las%wind1[1]' 'set%las%wind2[1]' 'wwid' 'R%HEAD%SPE%VRES' -
 /format F12.4 F6.2 F6.2 F12.4 F12.4 F12.4 F7.2 F7.2 -
 F7.2 F7.2
 sic out
