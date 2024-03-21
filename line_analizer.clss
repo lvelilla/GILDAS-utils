@@ -1,0 +1,424 @@
+!Created by Luis Velilla-Prieto on 11th/May/2020
+! HELP:
+! This macro performs spectral line measuring: integrated intensity, fwzi, peak
+! temperature, gaussian fitting... and writes that to a file.
+! It is based on CLASS internal language and functionalities.
+!
+! USAGE:
+! 	@ measw file.dat FREQ VLIM1 VLIM2 METHOD
+! where:
+!	file.dat: output file to save parameters. It will append entries if exists.
+!	FREQ:
+!	VLIM1: Lower integration limit (in velocity units km/s) *see note_1
+!	VLIM2: Upper integration limit (in velocity units km/s) *see note_1
+! METHOD: 1 character for the fitting method n(one),g(auss),s(hell),b(oth)
+!
+! NOTES:
+! Note_1: If the velocity range is 0 0 the window will be selected with cursor.
+! Note_2: corrected systemic velocity is needed on the input spectra.
+! Note_3: Output units may change if different plotting units were used.
+! Note_4: estimated fwzi will be wrong if there is a blend.
+! Note_5: forward efficiencies are not always saved in the headers, be careful.
+! Note_6: header will be wrong if different fit methods are saved in the same
+!		  file.
+!
+! OUPUT:
+!	A12		- Name of the source ('R%HEAD%POS%SOURC')
+!	A12		- Name of the telescope ('R%HEAD%GEN%TELES')
+!	F12.4	- Input rest frequency ('ufre' input) [MHz]
+!	F6.1	- Nominal systemic velocity of the source ('R%HEAD%SPE%VOFF') [km/s]
+!	F6.2	- Main beam efficiency ('R%HEAD%CAL%BEEFF': Beff)
+!	F6.2	- Forward efficiency ('R%HEAD%CAL%FOEFF': Feff)
+!	F12.4   - Integrated intensity ('area' after base command) [K*km/s]
+!	F12.4   - Uncertainty of the integrated intensity ('earea' computed) [K*km/s]
+!	F12.4   - RMS ('sigma' after base command) [K]
+!	2xF7.2  - Velocity range for that integrated intensity ('lwin' 'hwin' input) [km/s]
+!	F7.2	- Window width ('wwid' computed) [km/s]
+!	F7.2	- FWZI ('fwzi' computed) [km/s]
+!	F7.2    - Velocity resolution of the spectrum ('R%HEAD%SPE%VRES' absolute value) [km/s]
+!	F12.4   - Maximum temperature within the window ('tmax' computed) [K]
+!	F12.4   - Temperature at the systemic velocity ('tvsy' computed) [K]
+!	F12.4	- Maximum temperature within +/-3 channels around systemic velocity ('tsix' computed) [K]
+!	F12.4	- 3-channel average temperature around systemic velocity  ('tpeak') [K]
+!	F12.4	- 3-channel average temperature around maximum temperature ('tavmax') [K]
+!	> If Gaussian:
+!	2xF12.4	- Area and uncertainty ('R%HEAD%GAU%NFIT[1]' 'R%HEAD%GAU%ERROR[1]') [K*km/s]
+!	2xF12.4	- Position (relative to the voff) and uncertainty ('R%HEAD%GAU%NFIT[2]' 'R%HEAD%GAU%ERROR[2]') [km/s]
+!	2xF12.4	- FWHM and uncertainty ('R%HEAD%GAU%NFIT[3]' 'R%HEAD%GAU%ERROR[3]' [km/s]
+!	F12.4	- Peak temperature ('gpeak' computed) [K]
+!	> If Shell:
+!	2xF12.4 - Area and uncertainty ('R%HEAD%SHE%NSHELL[1]' 'R%HEAD%SHE%ERROR[1]') [K*MHz]
+!	2xF12.4 - Signal frequency ('R%HEAD%SHE%NSHELL[2]' 'R%HEAD%SHE%ERROR[2]') [MHz]
+! 2xF7.2	- FWZL and uncertainty ('fwzl' computed '2*R%HEAD%SHE%ERROR[3]') [MHz]
+!	F7.2    - Expansion velocity ('vshe' computed) [km/s]
+!	2xF8.3  - Horn to center ratio ('R%HEAD%SHE%NSHELL[4]' 'R%HEAD%SHE%ERROR[4]') [-]
+!	F12.4	- Peak temperature ('speak' computed) [K]
+!
+! FUTURE WORK:
+! - Deal with absorptions (FWZI estimation)																			NOT IMPLEMENTED
+! - Correct the calculation of the FWZI (sigma criterion)												NOT WORKING
+! - Multi-fit (multiple components in Gaussian/Shell)														WORKING: available in Gaussian mode
+! - Fit method 'both': headers and images																				NOT IMPLEMENTED
+! - Save image																																	BETA
+! - Header (column description and units) of the file: print with append?				BETA
+! - Draw masks																																	NOT WORKING IN SHELL METHOD
+! - Syntax error: writing the header of the file in method shell lines 299-300	TO RESOLVE
+!
+!******************************************************************************
+! Variables & initialisation:
+set win none
+set mask none
+sic out
+pen /def
+pen 0 /dash 1 /wei 2
+pen 1 /col red /dash 1 /wei 2
+pen 2 /col purple /dash 1 /wei 2
+pen 3 /col dodger_blue /dash 1 /wei 2
+pen 4 /col indian_red /dash 1 /wei 2
+pen 5 /col medium_sea_green /dash 1 /wei 2
+pen 6 /col magenta /dash 2 /wei 2
+pen 7 /col turquoise /dash 2 /wei 2
+pen 9 /col grey /dash 1 /wei 2
+pen 14 /col purple /dash 2 /wei 2
+
+define character*16 outf
+define char*1 fmet
+define double earea lchan hchan nchan ufre lwin hwin wwid lwzi hwzi fwzi tmax
+define double marea msigma tvsy tsix tpeak tavmax csys cmax
+define double cspe
+define integer ncom j k h l
+define logical aux1 aux2
+let outf &1
+let ufre &2
+let lwin &3
+let hwin &4
+let fmet &5
+let ncom &6
+define double gpeak[ncom] speak[ncom] vshe[ncom] fwzl[ncom]
+let cspe 2.99792e5
+
+! Program body:
+clear
+pen 0
+set unit v f
+modify frequency 'ufre'
+set mode x 'velocity-150' 'velocity+150'
+plot
+say "Select windows around all the lines, baseline fitting coming..."
+set win
+base 0 /pl
+pl
+!!! pause "Done. SET MASKS or improve BASE... CONTINUE..."											< Old feature removed
+if (lwin.eq.0).and.(hwin.eq.0) then
+	say "Select the limits of the window that you want to measure"
+	set win
+	if SET%LAS%WIND1[1].lt.SET%LAS%WIND2[1] then
+		let lwin SET%LAS%WIND1[1]
+		let hwin SET%LAS%WIND2[1]
+	else
+		let lwin SET%LAS%WIND2[1]
+		let hwin SET%LAS%WIND1[1]
+	endif
+else
+	set win 'lwin' 'hwin'
+endif
+let msigma sigma
+base last /plot
+let marea area
+let wwid abs(SET%LAS%WIND2[1]-SET%LAS%WIND1[1])							!Width of the selected window
+let nchan wwid/abs(R%HEAD%SPE%VRES) 												!Number of integrated channels
+let earea sqrt(nchan)*msigma*abs(R%HEAD%SPE%VRES)						!Unc. in integrated intensity. Note: unc. for 1 channel is rms*vres
+let lchan int(R%HEAD%SPE%RCHAN-abs((hwin-velocity)/R%HEAD%SPE%VRES))
+let hchan int(R%HEAD%SPE%RCHAN+abs((velocity-lwin)/R%HEAD%SPE%VRES))
+swap
+plot
+
+
+!!!!!!!!!!!!!! PRELIMINARY WAY TO COMPUTE THE FWZI AND TEMPERATURES WITHIN THE INTEGRATION WINDOW
+let aux1 .FALSE.
+let aux2 .FALSE.
+for i lchan to hchan
+	!say 'i' 'rx[i]' 'ry[i]' '5*sigma' 'velocity-abs(r%head%spe%vres/2)' 'velocity+abs(r%head%spe%vres/2)'
+	if (ry[i].gt.(5*msigma)).and.(aux1.eq.(.FALSE.)) then
+		let lwzi i-1										! Low edge for the FWZI computation
+		let aux1 .TRUE.									! TRUE when LWZI has been assigned
+	endif
+	if (ry[i].lt.(5*msigma)).and.(aux1.eq.(.TRUE.)) then
+		let hwzi i-1									!High edge for the FWZI computation
+	else
+		let hwzi hchan
+	endif
+	if (rx[i].gt.('velocity'-abs(R%HEAD%SPE%VRES/2)).and.rx[i].lt.('velocity'+abs(R%HEAD%SPE%VRES/2))) then
+		let csys i										!Channel corresponding to the systemic velocity
+	endif
+next
+if lwzi.eq.0
+	let lwzi lchan !in case that it is a very marginal line
+endif
+!let hwzi hwin !PRELIMINARY BEFORE FWZI COMPUTATION IS FIXED
+let tvsy ry['csys']															!Temp. at systemic velocity
+compute tmax max ry['lchan':'hchan']						!Max temp. within the whole window (using fwzi limits)
+compute tsix max ry['csys-3':'csys+3']					!Max temp. within +/-3 channels around the systemic velocity
+compute tpeak mean ry['csys-1':'csys+1']				!3-channel average temperature around the systemic velocity
+for i lwzi to hwzi
+	!say 'i' 'rx[i]' 'ry[i]' 'tmax'
+	if ry[i].eq.tmax then
+		let cmax i																	!Channel corresponding to the tmax
+		break
+	endif
+next
+compute tavmax mean ry['cmax-1':'cmax+1']				!3-channel average temperature around the tmax
+let fwzi abs((hwzi-lwzi)*R%HEAD%SPE%VRES)				!FWZI in km/s
+sic out
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+! Image BASE:
+clear
+set format brief
+greg\set char 0.5
+greg\set box_loc 4 24 9.4 19.4
+greg\limi 'velocity-(2*wwid)' 'velocity+(2*wwid)' user_ymin user_ymax
+set mode x velocity-(2*wwid) velocity+(2*wwid)
+plot
+pen 9
+greg\histo rx['lchan':'hchan'] ry['lchan':'hchan'] /fill /base
+pen 0
+spec
+greg\draw relocate velocity user_ymin /user
+pen 14
+greg\draw line velocity user_ymax /user
+pen 2
+greg\draw text 0.4 -0.6 "Vsys= "'nint(10*velocity/10)'" km/s" 3 /box 8
+pen 3
+greg\draw text 0.5 -0.4 "Integration win.= ["'nint(10*SET%LAS%WIND1[1])/10'" : "'nint(10*SET%LAS%WIND2[1])/10'"] km/s" 3 /box 7
+greg\draw text 0.5 -1.0 "RMS= "'nint(msigma*10000)|10'" mK; \gDV= "'nint(100*R%HEAD%SPE%VRES)/100'" km/s"  3 /box 7
+greg\draw text 0.5 -1.6 "AREA= "'nint(marea*1000)|1000'" \s+ "'nint(1000*earea)/1000'" K*km/s"  3 /box 7
+greg\draw text 0.5 -2.2 "Tmax= "'nint(tmax*1000)|1000'" K ; Tvsy= "'nint(1000*tvsy)/1000'" K"  3 /box 7
+greg\draw text 0.5 -2.8 "Tav,max= "'nint(tavmax*1000)|1000'" K ; Tav,vsy= "'nint(tpeak*1000)/1000'" K"  3 /box 7
+pen 0
+draw mask
+hard 'int(ufre)'_base.eps /dev eps color /overwrite
+greg\set char 0.6
+
+!Fitting part:
+if fmet.eq."g" then
+	method gauss
+	set unit v f
+	plot
+	say ""
+	say "Select line for Gaussian fit..."
+	line 'ncom'
+	mini
+	ite 6
+	visu /pen 7
+	for i 1 to ncom
+		visu 'i' /pen 6
+	next
+	pause "Improve the fit manually or continue..."
+	if .not.file("'outf'") then 																									!Writing header
+		sic out "'outf'" append
+		say "!SOURCE_NAME" "TELESCOPE" "FREQ" "VSYS" "BEFF" "FEFF" "W-INT" "eW-INT" "RMS" "LeftWi" "RighWi" "FWin" "FWZI" "VRES" "TMax-Win" "T-vsys" "Tmax+-3vsys" "Tav+-1vsys" "Tav+-1maxwi" "GAU-AREA" "eGAU-AREA" "GAU-POS" "eGAU-POS" "GAU-FWHM" "eGAU-FWHM" "GAU-TPEAK" /format a12 a12 a12 a6 a6 a6 a12 a12 a12 a7 a7 a7 a7 a7 a12 a12 a12 a12 a12 a12 a12 a12 a12 a12 a12 a12
+		say "!-----------" "---" "MHz" "km/s" "---" "---" "K*km/s" "K*km/s" "K" "km/s" "km/s" "km/s" "km/s" "km/s" "K" "K" "K" "K" "K" "K*km/s" "K*km/s" "km/s" "km/s" "km/s" "km/s" "K" !/format a12 a12 a12 a6 a6 a6 a12 a12 a12 a7 a7 a7 a7 a7 a12 a12 a12 a12 a12 a12 a12 a12 a12 a12 a12 a12
+	endif
+	for i 1 to ncom
+		let j 3*i-2
+		let k 3*i-1
+		let h 3*i
+		let gpeak[i] R%HEAD%GAU%NFIT[j]*2*sqrt(log(2)/pi)/R%HEAD%GAU%NFIT[h]
+		sic out 'outf' append
+			say R%HEAD%POS%SOURC R%HEAD%GEN%TELES ufre R%HEAD%SPE%VOFF -
+	  		R%HEAD%CAL%BEEFF R%HEAD%CAL%FOEFF marea earea msigma lwin hwin wwid fwzi -
+	  		R%HEAD%SPE%VRES tmax tvsy tsix tpeak tavmax R%HEAD%GAU%NFIT[j] -
+	  		R%HEAD%GAU%ERROR[j] R%HEAD%GAU%NFIT[k] R%HEAD%GAU%ERROR[k] -
+	  		R%HEAD%GAU%NFIT[h] R%HEAD%GAU%ERROR[h] gpeak[i] -
+	  		/format a12 a12 f12.4 f6.1 f6.2 f6.2 f12.4 f12.4 f12.4 f7.2 f7.2 f7.2 -
+	  		f7.2 f7.2 f12.4 f12.4 f12.4 f12.4 f12.4 f12.4 f12.4 f12.4 f12.4 f12.4 -
+	  		f12.4 f12.4
+		sic out
+	next
+
+	! Image GAUSS:
+	clear
+	set format brief
+	greg\set char 0.5
+	pen 0
+	greg\set box_loc 4 24 9.4 19.4
+	greg\limi 'velocity-(wwid*2)' 'velocity+(wwid*2)' user_ymin user_ymax
+	set mode x velocity-(wwid*2) velocity+(wwid*2)
+	plot
+	pen 9
+	greg\histo rx['lchan':'hchan'] ry['lchan':'hchan'] /fill /base
+	pen 0
+	spec
+	greg\draw relocate velocity user_ymin /user
+	pen 14
+	greg\draw line velocity user_ymax /user
+	pen 2
+	greg\draw text 0.4 -0.6 "Vsys= "'nint(10*velocity/10)'" km/s" 3 /box 8
+	pen 3
+	greg\draw text 0.5 -0.4 "Integration win.= ["'nint(10*SET%LAS%WIND1[1])/10'" : "'nint(10*SET%LAS%WIND2[1])/10'"] km/s" 3 /box 7
+	greg\draw text 0.5 -1.0 "RMS= "'nint(msigma*10000)|10'" mK; \gDV= "'nint(100*R%HEAD%SPE%VRES)/100'" km/s"  3 /box 7
+	greg\draw text 0.5 -1.6 "AREA= "'nint(marea*1000)|1000'" \s+ "'nint(1000*earea)/1000'" K*km/s"  3 /box 7
+	greg\draw text 0.5 -2.2 "Tmax= "'nint(tmax*1000)|1000'" K ; Tvsy= "'nint(1000*tvsy)/1000'" K"  3 /box 7
+	greg\draw text 0.5 -2.8 "Tav,max= "'nint(tavmax*1000)|1000'" K ; Tav,vsy= "'nint(tpeak*1000)/1000'" K"  3 /box 7
+	pen 4
+	greg\draw text 0.5 -4.0 "Gaussian Fit Results:" 3 /box 7
+	greg\set char 0.4
+	greg\draw text 0.5 -4.6 "A(Kkm/s) Pos(km/s) FWHM(km/s) T(K)" 3 /box 7
+	for i 1 to ncom
+		let j 3*i-2
+		let k 3*i-1
+		let h 3*i
+		greg\draw text 0.5 -4.6-(i*0.5) 'nint(R%HEAD%GAU%NFIT[j]*1000)|1000'"("'nint(1000*R%HEAD%GAU%ERROR[j])/1000'")  "'nint(R%HEAD%GAU%NFIT[k]*100)|100'"("'nint(100*R%HEAD%GAU%ERROR[k])/100'")  "'nint(R%HEAD%GAU%NFIT[h]*10)|10'"("'nint(R%HEAD%GAU%ERROR[h]*10)|10'")  "'nint(gpeak[i]*1000)/1000' 3 /box 7
+	next
+	for i 1 to ncom
+		visu 'i' /pen 6
+	next
+	pen 0
+	draw mask
+	hard 'int(ufre)'_gauss.eps /dev eps color /overwrite
+	greg\set char 0.6
+else if fmet.eq."s" then
+	method shell
+	get
+	set unit f v
+	modify fre 'ufre'
+	set mode x 'frequency-(frequency*wwid*1/cspe)' 'frequency+(frequency*wwid*1/cspe)'
+	plot
+	base last
+	say ""
+	say "Select the line for the shell fit..."
+	line ncom
+	mini
+	ite 6
+	visu /pen 7
+	pause "Improve the fit manually or continue..."
+	!! MISSING HEADER
+	if .not.file("'outf'") then 	!Writing header
+		sic out 'outf' append
+		!say "!SOURCE_NAME" "TELESCOPE" "FREQ" "VSYS" "BEFF" "FEFF" "W-INT" "eW-INT" "RMS" "LeftWi" "RighWi" "FWin" "FWZI" "VRES" "TMax-Win" "T-vsys" "Tmax+-3vsys" "Tav+-1vsys" "Tav+-1maxwi" "SHE-AREA" "eSHE-AREA" "SHE-POS" "eSHE-POS" "SHE-FWZL" "eSHE-FWZL" "SHE-Vexp" "SHE-H2C" "eSHE-H2C" "SHE-Tpeak" /format a12 a12 a12 a6 a6 a6 a12 a12 a12 a7 a7 a7 a7 a7 a12 a12 a12 a12 a12 a12 a12 a12 a12 a12 a12 a12 a12 a12 a12
+		!say "!-----------" "---" "MHz" "km/s" "---" "---" "K*km/s" "K*km/s" "K" "km/s" "km/s" "km/s" "km/s" "km/s" "K" "K" "K" "K" "K" "K*km/s" "K*km/s" "km/s" "km/s" "km/s" "km/s" "km/s" "---" "---" "K"/format a12 a12 a12 a6 a6 a6 a12 a12 a12 a7 a7 a7 a7 a7 a12 a12 a12 a12 a12 a12 a12 a12 a12 a12 a12 a12 a12 a12 a12
+	endif
+	for i 1 to ncom
+		let j 4*i-3
+		let k 4*i-2
+		let h 4*i-1
+		let l 4*i
+		let fwzl[i] 2*R%HEAD%SHE%NSHELL[h]*cspe/frequency
+		let vshe[i] cspe*fwzl/(frequency+R%HEAD%SHE%NSHELL[k])/2
+		let speak[i] R%HEAD%SHE%NSHELL[j]/fwzl/(1+R%HEAD%SHE%NSHELL[l]/3)
+		sic out 'outf' append
+		say R%HEAD%POS%SOURC R%HEAD%GEN%TELES ufre R%HEAD%SPE%VOFF -
+	  	  R%HEAD%CAL%BEEFF R%HEAD%CAL%FOEFF marea earea msigma lwin hwin wwid fwzi -
+	  	  R%HEAD%SPE%VRES tmax tvsy tsix tpeak tavmax R%HEAD%SHE%NSHELL[j]*cspe/frequency -
+	  	  R%HEAD%SHE%ERROR[j]*cspe/frequency cspe*R%HEAD%SHE%NSHELL[k]/frequency cspe*R%HEAD%SHE%ERROR[k]/frequency -
+	  	  fwzl 2*R%HEAD%SHE%ERROR[h]*cspe/frequency vshe[i] R%HEAD%SHE%NSHELL[l] -
+	  	  R%HEAD%SHE%ERROR[l] speak[i] -
+	  	  /format a12 a12 f12.4 f6.1 f6.2 f6.2 f12.4 f12.4 f12.4 f7.2 f7.2 f7.2 -
+	  	  f7.2 f7.2 f12.4 f12.4 f12.4 f12.4 f12.4 f12.4 f12.4 f12.4 f12.4 f7.2 -
+	  	  f7.2 f7.2 f8.3 f8.3 f12.4
+	next
+	sic out
+	! Image SHELL:
+	clear
+	set format brief
+	greg\set char 0.5
+	pen 0
+	greg\set box_loc 4 24 9.4 19.4
+	set mode x frequency-(frequency*wwid*2/cspe) frequency+(frequency*wwid*2/cspe)
+	pen 0
+	plot
+	pen 9
+	greg\histo rx['int(R%HEAD%SPE%RCHAN-abs((velocity-lwin)/R%HEAD%SPE%VRES))':'int(R%HEAD%SPE%RCHAN+abs((velocity-hwin)/R%HEAD%SPE%VRES))'] ry['int(R%HEAD%SPE%RCHAN-abs((velocity-lwin)/R%HEAD%SPE%VRES))':'int(R%HEAD%SPE%RCHAN+abs((velocity-hwin)/R%HEAD%SPE%VRES))'] /fill /base
+	pen 0
+	spec
+	greg\draw relocate 0 user_ymin /user
+	pen 14
+	greg\draw line 0 user_ymax /user
+	pen 2
+	greg\draw text 0.4 -0.6 "Vsys= "'nint(10*velocity/10)'" km/s" 3 /box 8
+	pen 3
+	greg\draw text 0.5 -0.4 "Integration win.= ["'nint(10*SET%LAS%WIND1[1])/10'" : "'nint(10*SET%LAS%WIND2[1])/10'"] km/s" 3 /box 7
+	greg\draw text 0.5 -1.0 "RMS= "'nint(msigma*10000)|10'" mK; \gDV= "'nint(100*R%HEAD%SPE%VRES)/100'" km/s"  3 /box 7
+	greg\draw text 0.5 -1.6 "AREA= "'nint(marea*1000)|1000'" \s+ "'nint(1000*earea)/1000'" K*km/s"  3 /box 7
+	greg\draw text 0.5 -2.2 "Tmax= "'nint(tmax*1000)|1000'" K ; Tvsy= "'nint(1000*tvsy)/1000'" K"  3 /box 7
+	greg\draw text 0.5 -2.8 "Tav,max= "'nint(tavmax*1000)|1000'" K ; Tav,vsy= "'nint(tpeak*1000)/1000'" K"  3 /box 7
+	pen 5
+	greg\draw text 0.5 -4.0 "Shell Fit Results:" 3 /box 7
+	greg\set char 0.4
+	greg\draw text 0.5 -4.6 "A(Kkm/s) Pos(km/s) Vexp(km/s) T(K)  H/C" 3 /box 7
+	greg\set char 0.3
+	for i 1 to ncom
+		let j 4*i-3
+		let k 4*i-2
+		let h 4*i-1
+		let l 4*i
+		greg\draw text 0.5 -4.6-(i*0.5) 'nint(cspe*R%HEAD%SHE%NSHELL[j]*1000/frequency)|1000'"("'nint(1000*R%HEAD%SHE%ERROR[j]*cspe/frequency)/1000'")  "'nint(100*(velocity-(cspe*R%HEAD%SHE%NSHELL[k]/frequency)))/100'"("'nint(100*(cspe*R%HEAD%SHE%ERROR[k]/frequency))/100'")  "'nint(vshe[i]*10)|10'"  "'nint(speak[i]*1000)/1000'"  "'nint(R%HEAD%SHE%NSHELL[l]*100)/100'"("'nint(R%HEAD%SHE%ERROR[l]*100)/100'")" 3 /box 7
+	next
+	for i 1 to ncom
+		visu 'i' /pen 6
+	next
+	visu /pen 7
+	hard 'int(ufre)'_shell.eps /dev eps color /overwrite
+	greg\set char 0.6
+	pen 0
+else if fmet.eq."b" then
+	set unit v f
+	method gauss
+	plot
+	say ""
+	say "Select the line for Gaussian fit..."
+	line 1
+	mini
+	ite 6
+	visu /pen 7
+	! Image Gaussian:
+	! WORKING
+
+
+	set unit f v
+	method shell
+	plot
+	say ""
+	say "Select the line for Shell fit..."
+	line 1
+	mini
+	ite 6
+	visu /pen 7
+	! Image Shell:
+	! WORKING
+
+
+	sic out
+	say R%HEAD%POS%SOURC R%HEAD%GEN%TELES ufre R%HEAD%SPE%VOFF -
+	  R%HEAD%CAL%BEEFF R%HEAD%CAL%FOEFF marea earea msigma lwin hwin wwid fwzi -
+	  R%HEAD%SPE%VRES tmax tvsy tsix tpeak tavmax R%HEAD%GAU%NFIT[1] -
+	  R%HEAD%GAU%ERROR[1] R%HEAD%GAU%NFIT[2] R%HEAD%GAU%ERROR[2] -
+	  R%HEAD%GAU%NFIT[3] R%HEAD%GAU%ERROR[3] gpeak R%HEAD%SHE%NSHELL[1] -
+	  R%HEAD%SHE%ERROR[1] frequency+R%HEAD%SHE%NSHELL[2] R%HEAD%SHE%ERROR[2] -
+	  fwzl 2*R%HEAD%SHE%ERROR[3] vshe R%HEAD%SHE%NSHELL[4] -
+	  R%HEAD%SHE%ERROR[4] speak -
+	  /format a12 a12 f12.4 f6.1 f6.2 f6.2 f12.4 f12.4 f12.4 f7.2 f7.2 f7.2 -
+	  f7.2 f7.2 f12.4 f12.4 f12.4 f12.4 f12.4 f12.4 f12.4 f12.4 f12.4 f12.4 -
+	  f12.4 f12.4 f12.4 f12.4 f12.4 f12.4 f7.2 f7.2 f7.2 f8.3 f8.3 f12.4
+	sic out
+else if fmet.eq."n" then
+	if .not.file("'outf'") then 	!Writing header
+		sic out 'outf' append
+		!say "!SOURCE_NAME" "TELESCOPE" "FREQ" "VSYS" "BEFF" "FEFF" "W-INT" "eW-INT" "RMS" "LeftWi" "RighWi" "FWin" "FWZI" "VRES" "TMax-Win" "T-vsys" "Tmax+-3vsys" "Tav+-1vsys" "Tav+-1maxwi" /format a12 a12 a12 a6 a6 a6 a12 a12 a12 a7 a7 a7 a7 a7 a12 a12 a12 a12 a12
+		!say "!-----------" "---" "MHz" "km/s" "---" "---" "K*km/s" "K*km/s" "K" "km/s" "km/s" "km/s" "km/s" "km/s" "K" "K" "K" "K" "K" /format a12 a12 a12 a6 a6 a6 a12 a12 a12 a7 a7 a7 a7 a7 a12 a12 a12 a12 a12
+	endif
+	sic out 'outf' append
+	say R%HEAD%POS%SOURC R%HEAD%GEN%TELES ufre R%HEAD%SPE%VOFF -
+	  R%HEAD%CAL%BEEFF R%HEAD%CAL%FOEFF marea earea msigma lwin hwin wwid fwzi -
+	  R%HEAD%SPE%VRES tmax tvsy tsix tpeak tavmax -
+	  /format a12 a12 f12.4 f6.1 f6.2 f6.2 f12.4 f12.4 f12.4 f7.2 f7.2 f7.2 -
+      f7.2 f7.2 f12.4 f12.4 f12.4 f12.4 f12.4
+	sic out
+else
+	say "Fit method not recognised. Options: g/s/b/n"
+endif
+
+pause "eop debug"
+! EOP:
+sic out
