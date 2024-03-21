@@ -1,17 +1,53 @@
-!Created by Luis Velilla-Prieto on 11th/May/2020
+! BETA - UNFINISHED
+! Programmed: Luis Velilla-Prieto 
+! Date: 21/Mar/2024
+!
 ! HELP:
 ! This macro performs spectral line measuring: integrated intensity, fwzi, peak
-! temperature, gaussian fitting... and writes that to a file.
+! temperature, gaussian fitting, and/or shell fitting
+! Results are written into a file
 ! It is based on CLASS internal language and functionalities.
-!
+! 
 ! USAGE:
-! 	@ measw file.dat FREQ VLIM1 VLIM2 METHOD
-! where:
-!	file.dat: output file to save parameters. It will append entries if exists.
-!	FREQ:
-!	VLIM1: Lower integration limit (in velocity units km/s) *see note_1
-!	VLIM2: Upper integration limit (in velocity units km/s) *see note_1
-! METHOD: 1 character for the fitting method n(one),g(auss),s(hell),b(oth)
+! @line_analizer lfre lwin rwin method
+!
+! INPUT:
+! lfre: Rest laboratory frequency of the line
+! lwin: Lower integration limit (in velocity units km/s) *see note_1
+! rwin: Upper integration limit (in velocity units km/s) *see note_1
+!
+! RESULT:
+! Creates a file with name based on "lfre" containing the results  
+! It will append entries if the file exists.
+!
+! NOTES:
+! Note_1: If the velocity range is 0 0 the window will be selected with cursor.
+! Note_2: Systemic velocity is not manipulated on the input spectra.
+! Note_3: forward efficiencies are not always correctly saved in the headers, be careful, and consider if it is in Ta*, Tmb, Jy/K units
+! Note_4: the routine expects a spectrum with an already fitted baseline but you have a chance to subtract one
+!
+! OUPUT:
+!
+!	#1	F12.4   - Input rest frequency ('ufre' input) [MHz]
+!	#2	F6.2    - Main beam efficiency ('R%HEAD%CAL%BEEFF': Beff)
+!	#3	F6.2    - Forward efficiency ('R%HEAD%CAL%FOEFF': Feff)
+!	#4	F12.4   - Integrated intensity ('barea' after base command) [K*km/s]
+!	#5	F12.4   - Uncertainty of the integrated intensity ('earea' computed) [K*km/s]
+!	#6	F12.4   - RMS ('sigma' after base command) [K]
+!	#7-8	2xF7.2  - Velocity range for that integrated intensity ('lwin' 'rwin' input) [km/s]
+!	#9	F7.2	- Window width ('wwid' computed) [km/s]
+!	#10	F7.2    - Velocity resolution of the spectrum ('R%HEAD%SPE%VRES' absolute value) [km/s]
+!
+! REVISION:
+!	1) SIGMA value: Check if 'sigma' value is correct when computing the uncertainty of the area (earea)
+!	R%HEAD%BAS%SIGFI or SIGMA point at the same internal CLASS values that are saved in the header
+!	But this value will not change if you carry out a SMOOTH
+!	It will updated upon a new baseline computation
+!
+! FUTURE WORK:
+!
+!
+!
 !
 ! NOTES:
 ! Note_1: If the velocity range is 0 0 the window will be selected with cursor.
@@ -64,7 +100,10 @@
 ! - Draw masks																																	NOT WORKING IN SHELL METHOD
 ! - Syntax error: writing the header of the file in method shell lines 299-300	TO RESOLVE
 !
-!******************************************************************************
+!
+!*****************
+!* START PROGRAM *
+!*****************
 ! Variables & initialisation:
 set win none
 set mask none
