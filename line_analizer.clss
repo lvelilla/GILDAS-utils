@@ -13,6 +13,8 @@
 ! USAGE:
 ! @line_analizer ufre lwin rwin method
 !
+! e.g.: @line_analizer.clss 115230 -100 100 g
+!
 ! INPUT:
 ! ufre: Rest laboratory frequency of the line
 ! lwin: Guess in velocity units for the lower limit of the line (use 3 sigma criteria)
@@ -20,7 +22,7 @@
 ! method: fitting method can be "g" for gaussian and "s" for shell
 !
 ! RESULT:
-! Creates a file with name based on "lfre" containing the results  
+! Creates a file with name based on "ufre" containing the results  
 ! It will append entries if the file exists.
 !
 ! NOTES:
@@ -45,34 +47,38 @@
 !	#10	F7.2    - Velocity resolution of the spectrum ('R%HEAD%SPE%VRES' absolute value) [km/s]
 !
 ! OUPUT:
-!	F12.4	- Input rest frequency ('ufre' input) [MHz]
-!	F6.1	- Nominal systemic velocity of the source ('R%HEAD%SPE%VOFF') [km/s]
-!	F6.2	- Main beam efficiency ('R%HEAD%CAL%BEEFF': Beff)
-!	F6.2	- Forward efficiency ('R%HEAD%CAL%FOEFF': Feff)
-!	F12.4   - Integrated intensity ('area' after base command) [K*km/s]
-!	F12.4   - Uncertainty of the integrated intensity ('earea' computed) [K*km/s]
-!	F12.4   - RMS ('sigma' after base command) [K]
-!	2xF7.2  - Velocity range for that integrated intensity ('lwin' 'hwin' input) [km/s]
-!	F7.2	- Window width ('wwid' computed) [km/s]
-!	F7.2	- FWZI ('fwzi' computed) [km/s]
-!	F7.2    - Velocity resolution of the spectrum ('R%HEAD%SPE%VRES' absolute value) [km/s]
-!	F12.4   - Maximum temperature within the window ('tmax' computed) [K]
-!	F12.4   - Temperature at the systemic velocity ('tvsy' computed) [K]
-!	F12.4	- Maximum temperature within +/-3 channels around systemic velocity ('tsix' computed) [K]
-!	F12.4	- 3-channel average temperature around systemic velocity  ('tpeak') [K]
-!	F12.4	- 3-channel average temperature around maximum temperature ('tavmax') [K]
-!	> If Gaussian:
-!	2xF12.4	- Area and uncertainty ('R%HEAD%GAU%NFIT[1]' 'R%HEAD%GAU%ERROR[1]') [K*km/s]
-!	2xF12.4	- Position (relative to the voff) and uncertainty ('R%HEAD%GAU%NFIT[2]' 'R%HEAD%GAU%ERROR[2]') [km/s]
-!	2xF12.4	- FWHM and uncertainty ('R%HEAD%GAU%NFIT[3]' 'R%HEAD%GAU%ERROR[3]' [km/s]
-!	F12.4	- Peak temperature ('gpeak' computed) [K]
-!	> If Shell:
-!	2xF12.4 - Area and uncertainty ('R%HEAD%SHE%NSHELL[1]' 'R%HEAD%SHE%ERROR[1]') [K*MHz]
-!	2xF12.4 - Signal frequency ('R%HEAD%SHE%NSHELL[2]' 'R%HEAD%SHE%ERROR[2]') [MHz]
-! 2xF7.2	- FWZL and uncertainty ('fwzl' computed '2*R%HEAD%SHE%ERROR[3]') [MHz]
-!	F7.2    - Expansion velocity ('vshe' computed) [km/s]
-!	2xF8.3  - Horn to center ratio ('R%HEAD%SHE%NSHELL[4]' 'R%HEAD%SHE%ERROR[4]') [-]
-!	F12.4	- Peak temperature ('speak' computed) [K]
+!	#1  	F12.4	- Input rest frequency ('ufre' input) [MHz]
+!	#2    	F6.1	- Nominal systemic velocity of the source ('R%HEAD%SPE%VOFF') [km/s]
+!	#3    	F6.2	- Main beam efficiency ('R%HEAD%CAL%BEEFF': Beff)
+!	#4	F6.2	- Forward efficiency ('R%HEAD%CAL%FOEFF': Feff)
+!	#5	F12.4   - Integrated intensity ('area' after base command) [K*km/s]
+!	#6	F12.4	- Integrated intensity ('rarea' from rectangle addition) [K*km/s]
+!	#7	F12.4   - Uncertainty of the integrated intensities ('earea' computed) [K*km/s]
+!	#8	F12.4   - RMS ('sigma' from last base command) [K]
+!	#9-10	2xF7.2  - Input Velocity range ('lwin' 'hwin') [km/s]
+!	#11	F7.2	- Window width ('wwid' computed) [km/s]
+!	#12-13 	2xF7.2	- Computed emission range based on 3-sigma criterion 5-channel average [km/s]
+!	#14	F7.2	- FWZI from (#13-#12) ('fwzi' computed) [km/s]
+!	#15	F7.2    - Velocity resolution of the spectrum ('R%HEAD%SPE%VRES' absolute value) [km/s]
+!	#16	F12.4   - Maximum temperature within the window ('tmax' computed) [K]
+!	#17	F12.4   - Temperature at the systemic velocity ('tvsy' computed) [K]
+!	#18	F12.4	- Maximum temperature within +/-3 channels around systemic velocity ('tsix' computed) [K]
+!	#19	F12.4	- 3-channel average temperature around systemic velocity  ('tpeak') [K]
+!	#20	F12.4	- 3-channel average temperature around maximum temperature ('tavmax') [K]
+!
+!	> If Shell method selected:
+!	#21-22	2xF12.4 - Area and uncertainty ('R%HEAD%SHE%NSHELL[1]' 'R%HEAD%SHE%ERROR[1]') [K*MHz]
+!	#23-24	2xF12.4 - Signal frequency ('R%HEAD%SHE%NSHELL[2]' 'R%HEAD%SHE%ERROR[2]') [MHz]
+! 	#25-26	2xF7.2	- FWZL and uncertainty ('fwzl' computed '2*R%HEAD%SHE%ERROR[3]') [MHz]
+!	#27	F7.2    - Expansion velocity ('vshe' computed) [km/s]
+!	#28-29	2xF8.3  - Horn to center ratio ('R%HEAD%SHE%NSHELL[4]' 'R%HEAD%SHE%ERROR[4]') [-]
+!	#30	F12.4	- Peak temperature ('speak' computed) [K]
+
+!	> If Gaussian method selected:
+!	#21-22	2xF12.4	- Area and uncertainty ('R%HEAD%GAU%NFIT[1]' 'R%HEAD%GAU%ERROR[1]') [K*km/s]
+!	#23-24	2xF12.4	- Position (relative to the voff) and uncertainty ('R%HEAD%GAU%NFIT[2]' 'R%HEAD%GAU%ERROR[2]') [km/s]
+!	#25-26	2xF12.4	- FWHM and uncertainty ('R%HEAD%GAU%NFIT[3]' 'R%HEAD%GAU%ERROR[3]' [km/s]
+!	#27	F12.4	- Peak temperature ('gpeak' computed) [K]
 !
 ! FUTURE WORK:
 ! - Deal with absorptions (FWZI estimation)																			NOT IMPLEMENTED
@@ -80,7 +86,7 @@
 ! - Multi-fit (multiple components in Gaussian/Shell)														WORKING: available in Gaussian mode
 ! - Fit method 'both': headers and images																				NOT IMPLEMENTED
 ! - Save image																																	BETA
-! - Header (column description and units) of the file: print with append?				BETA
+! - Header (column description and units) of the file: print with append?	BETA
 ! - Draw masks																																	NOT WORKING IN SHELL METHOD
 ! - Syntax error: writing the header of the file in method shell lines 299-300	TO RESOLVE
 !
