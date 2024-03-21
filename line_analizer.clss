@@ -22,11 +22,11 @@
 ! method: fitting method can be "g" for gaussian and "s" for shell
 !
 ! RESULT:
-! Creates a file with name based on "ufre" containing the results  
+! Creates files with names based on "ufre" containing the results  
 ! It will append entries if the file exists.
 !
 ! NOTES:
-! Be carefull in case there are line blends
+! Be careful in case there are line blends
 !
 ! Note_1: If the velocity range is 0 0 lwin/rwin will be selected with cursor.
 ! Note_2: Systemic velocity is not manipulated on the input spectra.
@@ -34,19 +34,8 @@
 ! Note_4: consider the units of the input spectrum it is in Ta*, Tmb, Jy/K units for your results
 ! Note_5: the routine expects a spectrum with an already fitted baseline but you have a chance to subtract one
 !
-! OUPUT: CARE ABOUT UNITS K vs MHz and K vs km/s are expected
+! OUPUT: CARE ABOUT UNITS ... input spectrum K vs MHz and K vs km/s are expected
 !
-!	#1	F12.4   - Input rest frequency ('ufre' input) [MHz]
-!	#2	F6.2    - Main beam efficiency ('R%HEAD%CAL%BEEFF': Beff)
-!	#3	F6.2    - Forward efficiency ('R%HEAD%CAL%FOEFF': Feff)
-!	#4	F12.4   - Integrated intensity ('barea' after base command) [K*km/s]
-!	#5	F12.4   - Uncertainty of the integrated intensity ('earea' computed) [K*km/s]
-!	#6	F12.4   - RMS ('sigma' after base command) [K]
-!	#7-8	2xF7.2  - Velocity range for that integrated intensity ('lwin' 'rwin' input) [km/s]
-!	#9	F7.2	- Window width ('wwid' computed) [km/s]
-!	#10	F7.2    - Velocity resolution of the spectrum ('R%HEAD%SPE%VRES' absolute value) [km/s]
-!
-! OUPUT:
 !	#1  	F12.4	- Input rest frequency ('ufre' input) [MHz]
 !	#2    	F6.1	- Nominal systemic velocity of the source ('R%HEAD%SPE%VOFF') [km/s]
 !	#3    	F6.2	- Main beam efficiency ('R%HEAD%CAL%BEEFF': Beff)
