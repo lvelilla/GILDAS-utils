@@ -25,8 +25,8 @@
 ! NOTES:
 ! Note_1: If the velocity range is 0 0 the window will be selected with cursor.
 ! Note_2: Systemic velocity is not manipulated on the input spectra.
-! Note_3: forward efficiencies are not always correctly saved in the headers, be careful.
-! Note_4: the routine expects a spectrum with an already fitted baseline
+! Note_3: forward efficiencies are not always correctly saved in the headers, be careful, and consider if it is in Ta*, Tmb, Jy/K units
+! Note_4: the routine expects a spectrum with an already fitted baseline but you have a chance to subtract one
 !
 ! OUPUT:
 !
@@ -41,7 +41,10 @@
 !	#10	F7.2    - Velocity resolution of the spectrum ('R%HEAD%SPE%VRES' absolute value) [km/s]
 !
 ! REVISION:
-!	Check 'sigma' value is correct when computing the uncertainty of the area (earea)
+!	1) SIGMA value: Check if 'sigma' value is correct when computing the uncertainty of the area (earea)
+!	R%HEAD%BAS%SIGFI or SIGMA point at the same internal CLASS values that are saved in the header
+!	But this value will not change if you carry out a SMOOTH
+!	It will updated upon a new baseline computation
 !
 ! FUTURE WORK:
 !
