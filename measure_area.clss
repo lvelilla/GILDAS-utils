@@ -46,7 +46,7 @@
 !	1) SIGMA value: Check if 'sigma' value is correct when computing the uncertainty of the area (earea)
 !	R%HEAD%BAS%SIGFI or SIGMA point at the same internal CLASS values that are saved in the header
 !	But this value will not change if you carry out a SMOOTH
-!	It will updated upon a new baseline computation
+!	It will be updated upon a new baseline computation
 !
 ! FUTURE WORK:
 !
