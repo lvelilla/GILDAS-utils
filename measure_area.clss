@@ -11,8 +11,10 @@
 ! Expected units should be K*km/s but note that this will depend on the input spectrum units
 !
 ! USAGE:
-! 	@ measure_area lfre lwin rwin 
+! 	@ measure_area.clss lfre lwin rwin 
 ! 
+!	@ measure_area.clss 115230 -100 +35
+!
 ! SETTINGS:
 !	lfre: Rest laboratory frequency of the line
 !	lwin: Lower integration limit (in velocity units km/s) *see note_1
