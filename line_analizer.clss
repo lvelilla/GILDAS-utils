@@ -43,7 +43,7 @@
 !	#5	F12.4   - Integrated intensity ('marea' after base command) [K*km/s]
 !	#6	F12.4	- Integrated intensity ('rarea' from rectangle addition) [K*km/s]
 !	#7	F12.4   - Uncertainty of the integrated intensities ('earea' computed) [K*km/s]
-!	#8	F12.4   - RMS ('sigma' from last base command) [K]
+!	#8	F12.4   - RMS ('msigma' from last base command) [K]
 !	#9-10	2xF7.2  - Input Velocity range guess ('mwin[1]' 'mwin[2]') [km/s]
 !	#11	F7.2	- Window width as abs(mwin[1]-mwin[2]) ('wwid' computed) [km/s]
 !	#12-13 	2xF7.2	- Computed emission range based on 3-sigma criterion 5-channel average [km/s]
@@ -105,8 +105,8 @@ pen 0
 ! DEFINITION OF VARIABLES AND CONSTANTS:
 define double ufre mwin[2] mch[2] erng[2]
 define double tmax vtmax tvsy tsix tpeak tavmax
-define real fwzi 
-define int chtmax
+define real fwzi marea rarea earea msigma
+define integer chtmax
 define double cspe
 let cspe 2.99792e5
 
@@ -121,10 +121,6 @@ let ncom &6    ????
 define character*16 outf
 define char*1 fmet
 define double earea lchan hchan nchan ufre lwin hwin wwid lwzi hwzi fwzi tmax
-define double marea msigma tvsy tsix tpeak tavmax csys cmax
-define double cspe
-define integer ncom j k h l
-define logical aux1 aux2
 let outf &1
 let ufre &2
 define double gpeak[ncom] speak[ncom] vshe[ncom] fwzl[ncom]
@@ -165,41 +161,20 @@ next
 let fwzi abs((erng[2]-erng[1])*r%head%spe%vres)
 !
 ! Compute temperatures:
-compute tmax max ry['mch[1]':'mch[2]']		!Max temp. within the whole window (using fwzi limits)
-for i mch[1] to mch[2]
+compute tmax max ry['erng[1]':'erng[2]']		!Max temp. within the whole window (using fwzi limits)
+for i erng[1] to erng[2]
 	if ry[i].eq.tmax then
 		let chtmax i
 		let vtmax rx[i]
 		break
 	endif
 next
-
 compute tsix max ry['int(r%head%spe%rchan)-3':'int(r%head%spe%rchan)+3']		!Max temp. within +/-3 channels around the systemic velocity
 compute tpeak mean ry['int(r%head%spe%rchan)-1':'int(r%head%spe%rchan)+1']		!3-channel average temperature around the systemic velocity
-
-for i lwzi to hwzi
-	!say 'i' 'rx[i]' 'ry[i]' 'tmax'
-	if ry[i].eq.tmax then
-		let cmax i																	!Channel corresponding to the tmax
-		break
-	endif
-next
-compute tavmax mean ry['cmax-1':'cmax+1']	!3-channel average temperature around the tmax
-
-
-
-
-
-
-
-
-
-
+compute tavmax mean ry['chtmax-1':'chtmax+1']
+let tvsy ry[int(r%head%spe%rchan)]
+!
 ! Compute the area
-
-
-!CONTINUE HERE
-
 
 
 
@@ -212,7 +187,15 @@ let earea sqrt(nchan)*msigma*abs(R%HEAD%SPE%VRES)				!Unc. in integrated intensi
 let lchan int(R%HEAD%SPE%RCHAN-abs((hwin-velocity)/R%HEAD%SPE%VRES))
 let hchan int(R%HEAD%SPE%RCHAN+abs((velocity-lwin)/R%HEAD%SPE%VRES))
 swap
-plot
+plo
+
+
+!CONTINUE HERE
+
+
+
+
+t
 
 
 !!!!!!!!!!!!!! PRELIMINARY WAY TO COMPUTE THE FWZI AND TEMPERATURES WITHIN THE INTEGRATION WINDOW
