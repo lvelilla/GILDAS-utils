@@ -103,7 +103,7 @@ clear
 pen 0
 
 ! DEFINITION OF VARIABLES AND CONSTANTS:
-define double ufre mwin[2] mch[2] 
+define double ufre mwin[2] mch[2] erng[2]
 define double cspe
 let cspe 2.99792e5
 
@@ -132,9 +132,8 @@ modify frequency 'ufre'
 set mode x 'velocity-200' 'velocity+200'
 plot
 say "" ; 
-pause "SET MASKS or consider any modification with SMOOTH, etc. CONTINUE..."
-
-!IF in case that MCH values are 0 0 for manual computation
+pause "SET MASKS, SMOOTH and do BASE 0. CONTINUE..."
+set win none
 if (mwin[1].eq.0).and.(mwin[2].eq.0) then
 	say ""
 	say "Select velocity limits for the emission line to analyze..." 
@@ -147,33 +146,37 @@ endif
 let mch[1] ((mwin[1]-r%head%spe%voff)/r%head%spe%vres)+r%head%spe%rchan
 let mch[2] ((mwin[2]-r%head%spe%voff)/r%head%spe%vres)+r%head%spe%rchan
 
+! Compute the emission range using 3*sigma criteria between mch[1,2]:
+for i mch[1]-6 to r%head%spe%rchan 
+	compute erng[1] mean ry['i':'i+4']
+	if erng[1].geq.5*sigma then
+		break
+	endif
+next
+for i r%head%spe%rchan to mch[2]+6 
+	compute erng[2] mean ry['i':'i+4']
+	if erng[2].geq.5*sigma then
+		break
+	endif
+next
+
+
+
 
 
 
 
 ! Compute the emission range and fwzi
+
+
 ! Compute the area
 
 
 !CONTINUE HERE
 
-say "" ; say "Select windows around all the lines for BASELINE (0 degree) fitting "
-set win
-base 0 /plot
-plot
-if (lwin.eq.0).and.(hwin.eq.0) then
-	say "Select the limits of the window that you want to integrate"
-	set win
-	if SET%LAS%WIND1[1].lt.SET%LAS%WIND2[1] then
-		let lwin SET%LAS%WIND1[1]
-		let hwin SET%LAS%WIND2[1]
-	else
-		let lwin SET%LAS%WIND2[1]
-		let hwin SET%LAS%WIND1[1]
-	endif
-else
-	set win 'lwin' 'hwin'
-endif
+
+
+
 let msigma sigma
 base last /plot
 let marea area
