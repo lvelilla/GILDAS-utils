@@ -105,7 +105,7 @@ pen 0
 define double ufre mwin[2] erng[2] cher[2] ver[2]
 define double tmax vtmax tvsy tsix tpeak tavmax
 define real wwid fwzi marea rarea earea msigma
-define integer mch[2] chtmax ncom bch pch cont
+define integer mch[2] chtmax ncom bch pch cont iaux1
 define char*1 fmet
 define char*16 outf
 define double cspe
@@ -164,7 +164,7 @@ set win mwin[1] mwin[2]
 base 0 
 for i mch[1]-6 to int(r%head%spe%rchan) 
 	compute erng[1] mean ry['i':'i+4']
-	say 'sigma' 'erng[1]' '3*sigma'
+	say channel 'i' sigma 'sigma' mean 'erng[1]' 3sigma '3*sigma'
 	if erng[1].ge.(3*sigma) then
 		let cher[1] i
 		let ver[1] rx[i]
@@ -193,7 +193,8 @@ next
 compute tsix max ry['int(r%head%spe%rchan)-3':'int(r%head%spe%rchan)+3']		!Max temp. within +/-3 channels around the systemic velocity
 compute tpeak mean ry['int(r%head%spe%rchan)-1':'int(r%head%spe%rchan)+1']		!3-channel average temperature around the systemic velocity
 compute tavmax mean ry['chtmax-1':'chtmax+1']
-let tvsy ry[int(r%head%spe%rchan)]
+let iaux1 int(r%head%spe%rchan)
+let tvsy ry[aux1]
 !
 ! Compute the area as the sum of rectangles between the emission range limits:
 set win none
