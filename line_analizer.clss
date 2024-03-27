@@ -194,7 +194,7 @@ compute tsix max ry['int(r%head%spe%rchan)-3':'int(r%head%spe%rchan)+3']		!Max t
 compute tpeak mean ry['int(r%head%spe%rchan)-1':'int(r%head%spe%rchan)+1']		!3-channel average temperature around the systemic velocity
 compute tavmax mean ry['chtmax-1':'chtmax+1']
 let iaux1 int(r%head%spe%rchan)
-let tvsy ry[aux1]
+let tvsy ry[iaux1]
 !
 ! Compute the area as the sum of rectangles between the emission range limits:
 set win none
