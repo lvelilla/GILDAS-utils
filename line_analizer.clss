@@ -238,7 +238,7 @@ greg\draw text 0.5 -3.4 "Tav,max= "'nint(tavmax*1000)|1000'" K ; Tav,vsy= "'nint
 pen 0
 draw mask
 hard 'int(ufre)'_linana.eps /dev eps color /overwrite
-hard 'int(ufre)'_linana.pdf /dev eps color /overwrite
+hard 'int(ufre)'_linana.pdf /dev pdf color /overwrite
 greg\set char 0.6
 pause "debug"
 !
