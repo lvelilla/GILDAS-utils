@@ -106,6 +106,7 @@ define double ufre mwin[2] erng[2] cher[2] ver[2]
 define double tmax vtmax tvsy tsix tpeak tavmax
 define real wwid fwzi marea rarea earea msigma
 define integer mch[2] chtmax ncom bch pch cont iaux1 nchan
+define integer intj inth intl intk
 define char*1 fmet
 define char*16 outf
 define double cspe
@@ -216,8 +217,8 @@ clear
 set format brief
 greg\set char 0.5
 greg\set box_loc 4 24 9.4 19.4
-greg\limi 'velocity-(2*fwzi)' 'velocity+(2*fwzi)' user_ymin user_ymax
-set mode x velocity-(2*fwzi) velocity+(2*fwzi)
+greg\limi 'velocity-(3*fwzi)' 'velocity+(3*fwzi)' user_ymin user_ymax
+set mode x velocity-(3*fwzi) velocity+(3*fwzi)
 plot
 pen 9
 greg\histo rx['cher[1]':'cher[2]'] ry['cher[1]':'cher[2]'] /fill /base
@@ -249,7 +250,7 @@ if fmet.eq."s" then
 	method shell
 	set unit f v
 	modify fre 'ufre'
-	set mode x 'frequency-(frequency*fwzi*2/cspe)' 'frequency+(frequency*fwzi*2/cspe)'
+	set mode x 'frequency-(frequency*fwzi*4/cspe)' 'frequency+(frequency*fwzi*4/cspe)'
 	plot
 	say ""
 	say "Select the line for the shell fit..."
@@ -259,13 +260,13 @@ if fmet.eq."s" then
 	visu /pen 7
 	pause "Improve the fit manually or continue..."
 	for i 1 to ncom
-		!let j 4*i-3
-		!let k 4*i-2
-		!let h 4*i-1
-		!let l 4*i
-		let fwzl[i] 2*R%HEAD%SHE%NSHELL[h]*cspe/frequency
-		let vshe[i] cspe*fwzl/(frequency+R%HEAD%SHE%NSHELL[k])/2
-		let speak[i] R%HEAD%SHE%NSHELL[j]/fwzl/(1+R%HEAD%SHE%NSHELL[l]/3)
+		let intj 4*i-3
+		let intk 4*i-2
+		let inth 4*i-1
+		let intl 4*i
+		let fwzl[i] 2*R%HEAD%SHE%NSHELL[inth]*cspe/frequency
+		let vshe[i] cspe*fwzl/(frequency+R%HEAD%SHE%NSHELL[intk])/2
+		let speak[i] R%HEAD%SHE%NSHELL[intj]/fwzl/(1+R%HEAD%SHE%NSHELL[intl]/3)
 		sic out 'outf[bch:pch]'p'outf[cont:]'.dat append
 		say ufre R%HEAD%SPE%VOFF R%HEAD%CAL%BEEFF R%HEAD%CAL%FOEFF marea rarea earea msigma -
 		mwin[1] mwin[2] wwid ver[1] ver[2] fwzi R%HEAD%SPE%VRES tmax -
@@ -308,11 +309,11 @@ if fmet.eq."s" then
 	greg\draw text 0.5 -5.2 "A(Kkm/s) Pos(km/s) Vexp(km/s) T(K)  H/C" 3 /box 7
 	greg\set char 0.3
 	for i 1 to ncom
-		!let j 4*i-3
-		!let k 4*i-2
-		!let h 4*i-1
-		!let l 4*i
-		greg\draw text 0.5 -5.2-(i*0.5) 'nint(cspe*R%HEAD%SHE%NSHELL[j]*1000/frequency)|1000'"("'nint(1000*R%HEAD%SHE%ERROR[j]*cspe/frequency)/1000'")  "'nint(100*(velocity-(cspe*R%HEAD%SHE%NSHELL[k]/frequency)))/100'"("'nint(100*(cspe*R%HEAD%SHE%ERROR[k]/frequency))/100'")  "'nint(vshe[i]*10)|10'"  "'nint(speak[i]*1000)/1000'"  "'nint(R%HEAD%SHE%NSHELL[l]*100)/100'"("'nint(R%HEAD%SHE%ERROR[l]*100)/100'")" 3 /box 7
+		let intj 4*i-3
+		let intk 4*i-2
+		let inth 4*i-1
+		let intl 4*i
+		greg\draw text 0.5 -5.2-(i*0.5) 'nint(cspe*R%HEAD%SHE%NSHELL[intj]*1000/frequency)|1000'"("'nint(1000*R%HEAD%SHE%ERROR[intj]*cspe/frequency)/1000'")  "'nint(100*(velocity-(cspe*R%HEAD%SHE%NSHELL[intk]/frequency)))/100'"("'nint(100*(cspe*R%HEAD%SHE%ERROR[intk]/frequency))/100'")  "'nint(vshe[i]*10)|10'"  "'nint(speak[i]*1000)/1000'"  "'nint(R%HEAD%SHE%NSHELL[intl]*100)/100'"("'nint(R%HEAD%SHE%ERROR[intl]*100)/100'")" 3 /box 7
 	next
 	for i 1 to ncom
 		visu 'i' /pen 6
