@@ -102,7 +102,7 @@ clear
 pen 0
 
 ! DEFINITION OF VARIABLES AND CONSTANTS:
-define double ufre mwin[2] mch[2] erng[2] cher[2] ver[2]
+define double ufre mwin[2] erng[2] cher[2] ver[2]
 define double tmax vtmax tvsy tsix tpeak tavmax
 define real wwid fwzi marea rarea earea msigma
 define integer mch[2] chtmax ncom bch pch cont
