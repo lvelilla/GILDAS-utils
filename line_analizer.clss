@@ -164,7 +164,7 @@ set win mwin[1] mwin[2]
 base 0 
 for i mch[1]-6 to int(r%head%spe%rchan) 
 	compute erng[1] mean ry['i':'i+4']
-	!say channel 'i' sigma 'sigma' mean 'erng[1]' 3sigma '3*sigma' !DEBUG
+	say channel 'i' sigma 'sigma' mean 'erng[1]' 3sigma '3*sigma' !DEBUG
 	if erng[1].ge.(3*sigma) then
 		let cher[1] i
 		let ver[1] rx[i]
@@ -173,6 +173,7 @@ for i mch[1]-6 to int(r%head%spe%rchan)
 next
 for i mch[2]+6 to int(r%head%spe%rchan) by -1
 	compute erng[2] mean ry['i':'i+4']
+	say channel 'i' sigma 'sigma' mean 'erng[1]' 3sigma '3*sigma' !DEBUG
 	if erng[2].ge.(3*sigma) then
 		let cher[2] i
 		let ver[2] rx[i]
