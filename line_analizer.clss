@@ -247,12 +247,10 @@ pause "debug"
 ! METHOD SHELL:
 if fmet.eq."s" then
 	method shell
-	get
 	set unit f v
 	modify fre 'ufre'
 	set mode x 'frequency-(frequency*fwzi*2/cspe)' 'frequency+(frequency*fwzi*2/cspe)'
 	plot
-	base last
 	say ""
 	say "Select the line for the shell fit..."
 	line ncom
@@ -285,7 +283,7 @@ if fmet.eq."s" then
 	greg\set char 0.5
 	pen 0
 	greg\set box_loc 4 24 9.4 19.4
-	set mode x frequency-(frequency*wwid*2/cspe) frequency+(frequency*wwid*2/cspe)
+	set mode x frequency-(frequency*wwid*3/cspe) frequency+(frequency*wwid*3/cspe)
 	pen 0
 	plot
 	pen 9
