@@ -113,10 +113,10 @@ let cspe 2.99792e5
 
 ! INPUT READING:
 let ufre &1
-let mwin[1] &3
-let mwin[2] &4
-let fmet &5
-let ncom &6
+let mwin[1] &2
+let mwin[2] &3
+let fmet &4
+let ncom &5
 
 ! ADDITIONAL VARIABLES FOR FITTING:
 define double gpeak[ncom] speak[ncom] vshe[ncom] fwzl[ncom]
