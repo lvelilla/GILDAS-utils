@@ -308,10 +308,10 @@ if fmet.eq."s" then
 	greg\draw text 0.5 -5.2 "A(Kkm/s) Pos(km/s) Vexp(km/s) T(K)  H/C" 3 /box 7
 	greg\set char 0.3
 	for i 1 to ncom
-		let j 4*i-3
-		let k 4*i-2
-		let h 4*i-1
-		let l 4*i
+		!let j 4*i-3
+		!let k 4*i-2
+		!let h 4*i-1
+		!let l 4*i
 		greg\draw text 0.5 -5.2-(i*0.5) 'nint(cspe*R%HEAD%SHE%NSHELL[j]*1000/frequency)|1000'"("'nint(1000*R%HEAD%SHE%ERROR[j]*cspe/frequency)/1000'")  "'nint(100*(velocity-(cspe*R%HEAD%SHE%NSHELL[k]/frequency)))/100'"("'nint(100*(cspe*R%HEAD%SHE%ERROR[k]/frequency))/100'")  "'nint(vshe[i]*10)|10'"  "'nint(speak[i]*1000)/1000'"  "'nint(R%HEAD%SHE%NSHELL[l]*100)/100'"("'nint(R%HEAD%SHE%ERROR[l]*100)/100'")" 3 /box 7
 	next
 	for i 1 to ncom
