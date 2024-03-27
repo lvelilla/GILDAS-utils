@@ -171,7 +171,7 @@ for i mch[1]-6 to int(r%head%spe%rchan)
 		break
 	endif
 next
-for i int(r%head%spe%rchan) to mch[2]+6 
+for i mch[2]+6 to int(r%head%spe%rchan) by -1
 	compute erng[2] mean ry['i':'i+4']
 	if erng[2].ge.(3*sigma) then
 		let cher[2] i
