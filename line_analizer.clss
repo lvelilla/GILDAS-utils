@@ -56,9 +56,9 @@
 !	#21	F12.4	- 3-channel average temperature around maximum temperature ('tavmax') [K]!
 !
 !	> If Shell method selected: total number of variables will depend on the number of components
-!	#22-23	2xF12.4 - Area and uncertainty (computed from K*MHz values in 'R%HEAD%SHE%NSHELL[1]' 'R%HEAD%SHE%ERROR[1]') [K*km/s]
-!	#24-25	2xF12.4 - Signal frequency ('R%HEAD%SHE%NSHELL[2]' 'R%HEAD%SHE%ERROR[2]') [MHz]
-! 	#26-27	2xF7.2	- FWZL and uncertainty ('fwzl' computed '2*R%HEAD%SHE%ERROR[3]') [MHz]
+!	#22-23	2xF12.4 - Area and uncertainty (Computed from K*MHz values in 'R%HEAD%SHE%NSHELL[1]' 'R%HEAD%SHE%ERROR[1]') [K*km/s]
+!	#24-25	2xF12.4 - Signal frequency (Computed 'R%HEAD%SHE%NSHELL[2]' 'R%HEAD%SHE%ERROR[2]') [MHz]
+! 	#26-27	2xF7.2	- FWZL and uncertainty ('fwzl' computed 'R%HEAD%SHE%ERROR[3]') [MHz]
 !	#28	F7.2    - Expansion velocity ('vshe' computed) [km/s]
 !	#29-30	2xF8.3  - Horn to center ratio ('R%HEAD%SHE%NSHELL[4]' 'R%HEAD%SHE%ERROR[4]') [-]
 !	#31	F12.4	- Peak temperature ('speak' computed) [K]
@@ -262,22 +262,32 @@ if fmet.eq."s" then
 	for i 1 to ncom
 		let intj 4*i-3	!r%head%spe%nshell index for area in K*MHz
 		let intk 4*i-2	!r%head%spe%nshell index for frequency offset in MHz
-		let inth 4*i-1  !r%head%spe%nshell index for half width at ZL in MHz
+		let inth 4*i-1  !r%head%spe%nshell index for Half Width at ZL in MHz
 		let intl 4*i	!r%head%spe%nshell index for horn-to-center
-		let vshe[i] r%head%she%nshell[inth]*cspe/(frequency+r%head%she%nshell[intk])
-		let fwzl[i] vshe[i]*2*(frequency+r%head%she%nshell[intk])/cspe
-		let speak[i] R%HEAD%SHE%NSHELL[intj]/r%head%she%nshell[inth]/(1+(R%HEAD%SHE%NSHELL[intl]/3))/2
+		let sfreq[i] frequency+R%HEAD%SHE%NSHELL[intk]
+		let esfreq[i] R%HEAD%SHE%ERROR[intk]
+		let fwzl[i] 2*r%head%she*nshell[inth]
+		let efwzl[i] 2*r%head%she*error[inth]
+		let vshe[i] r%head%she%nshell[inth]*cspe/sfreq[i]
+		let evshe[i] sqrt(((cspe/sfreq[i])**2)*((r%head%she%error[inth]*cspe/sfreq[i])**2))+(((fwzl[i]*cspe/2/sfreq[i]**2)**2)*((r%head%she%error[intk]*cspe/sfreq[i])**2)))
+		let sarea[i] R%HEAD%SHE%NSHELL[intj]*cspe/sfreq[i]
+		let esarea[i] R%HEAD%SHE%ERROR[intj]*cspe/sfreq[i]
+		
+		
+		
+		let speak[i] R%HEAD%SHE%NSHELL[intj]/r%head%she%nshell[inth]/2/(1+(R%HEAD%SHE%NSHELL[intl]/3))
 		sic out 'outf[bch:pch]'p'outf[cont:]'.dat append
 		say ufre R%HEAD%SPE%VOFF R%HEAD%CAL%BEEFF R%HEAD%CAL%FOEFF marea rarea earea msigma -
 		mwin[1] mwin[2] wwid ver[1] ver[2] fwzi R%HEAD%SPE%VRES tmax -
-		vtmax tvsy tsix tpeak tavmax R%HEAD%SHE%NSHELL[intj]*cspe/(frequency+R%HEAD%SHE%NSHELL[intj]) R%HEAD%SHE%ERROR[intj]*cspe/(frequency+R%HEAD%SHE%NSHELL[intj]) cspe*R%HEAD%SHE%NSHELL[intk]/(frequency+R%HEAD%SHE%NSHELL[intj]) -
-		cspe*R%HEAD%SHE%ERROR[intk]/(frequency+R%HEAD%SHE%NSHELL[intj]) fwzl 2*R%HEAD%SHE%ERROR[inth]*cspe/(frequency+R%HEAD%SHE%NSHELL[intj]) vshe[i] R%HEAD%SHE%NSHELL[intl] R%HEAD%SHE%ERROR[intl] speak[i] -
+		vtmax tvsy tsix tpeak tavmax 
+
+
+  
+		2*R%HEAD%SHE%ERROR[inth]*cspe/(frequency+R%HEAD%SHE%NSHELL[intj]) vshe[i] R%HEAD%SHE%NSHELL[intl] R%HEAD%SHE%ERROR[intl] speak[i] -
 		/format f12.4 f6.1 f6.2 f6.2 f12.4 f12.4 f12.4 f12.4 -
 		f7.2 f7.2 f7.2 f7.2 f7.2 f7.2 f7.2 f12.4 - 
 		f7.2 f12.4 f12.4 f12.4 f12.4 f12.4 f12.4 f12.4 -
 		f12.4 f7.2 f7.2 f7.2 f8.3 f8.3 f12.4
-
-
 
 !	> If Shell method selected: total number of variables will depend on the number of components
 !	#22-23	2xF12.4 - Area and uncertainty ('R%HEAD%SHE%NSHELL[1]' 'R%HEAD%SHE%ERROR[1]') [K*km/s]
