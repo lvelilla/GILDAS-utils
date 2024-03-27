@@ -294,20 +294,21 @@ if fmet.eq."s" then
 	pen 3
 	greg\draw text 0.5 -0.4 "Integration win.= ["'nint(10*SET%LAS%WIND1[1])/10'" : "'nint(10*SET%LAS%WIND2[1])/10'"] km/s" 3 /box 7
 	greg\draw text 0.5 -1.0 "RMS= "'nint(msigma*10000)|10'" mK; \gDV= "'nint(100*R%HEAD%SPE%VRES)/100'" km/s"  3 /box 7
-	greg\draw text 0.5 -1.6 "AREA= "'nint(marea*1000)|1000'" \s+ "'nint(1000*earea)/1000'" K*km/s"  3 /box 7
-	greg\draw text 0.5 -2.2 "Tmax= "'nint(tmax*1000)|1000'" K ; Tvsy= "'nint(1000*tvsy)/1000'" K"  3 /box 7
-	greg\draw text 0.5 -2.8 "Tav,max= "'nint(tavmax*1000)|1000'" K ; Tav,vsy= "'nint(tpeak*1000)/1000'" K"  3 /box 7
+	greg\draw text 0.5 -1.6 "BASE AREA= "'nint(marea*1000)|1000'" \s+ "'nint(1000*earea)/1000'" K*km/s"  3 /box 7
+	greg\draw text 0.5 -2.2 "SUM AREA= "'nint(rarea*1000)|1000'" \s+ "'nint(1000*earea)/1000'" K*km/s"  3 /box 7
+	greg\draw text 0.5 -2.8 "Tmax= "'nint(tmax*1000)|1000'" K ; Tvsy= "'nint(1000*tvsy)/1000'" K"  3 /box 7
+	greg\draw text 0.5 -3.4 "Tav,max= "'nint(tavmax*1000)|1000'" K ; Tav,vsy= "'nint(tpeak*1000)/1000'" K"  3 /box 7
 	pen 5
-	greg\draw text 0.5 -4.0 "Shell Fit Results:" 3 /box 7
+	greg\draw text 0.5 -4.6 "Shell Fit Results:" 3 /box 7
 	greg\set char 0.4
-	greg\draw text 0.5 -4.6 "A(Kkm/s) Pos(km/s) Vexp(km/s) T(K)  H/C" 3 /box 7
+	greg\draw text 0.5 -5.2 "A(Kkm/s) Pos(km/s) Vexp(km/s) T(K)  H/C" 3 /box 7
 	greg\set char 0.3
 	for i 1 to ncom
 		let j 4*i-3
 		let k 4*i-2
 		let h 4*i-1
 		let l 4*i
-		greg\draw text 0.5 -4.6-(i*0.5) 'nint(cspe*R%HEAD%SHE%NSHELL[j]*1000/frequency)|1000'"("'nint(1000*R%HEAD%SHE%ERROR[j]*cspe/frequency)/1000'")  "'nint(100*(velocity-(cspe*R%HEAD%SHE%NSHELL[k]/frequency)))/100'"("'nint(100*(cspe*R%HEAD%SHE%ERROR[k]/frequency))/100'")  "'nint(vshe[i]*10)|10'"  "'nint(speak[i]*1000)/1000'"  "'nint(R%HEAD%SHE%NSHELL[l]*100)/100'"("'nint(R%HEAD%SHE%ERROR[l]*100)/100'")" 3 /box 7
+		greg\draw text 0.5 -5.2-(i*0.5) 'nint(cspe*R%HEAD%SHE%NSHELL[j]*1000/frequency)|1000'"("'nint(1000*R%HEAD%SHE%ERROR[j]*cspe/frequency)/1000'")  "'nint(100*(velocity-(cspe*R%HEAD%SHE%NSHELL[k]/frequency)))/100'"("'nint(100*(cspe*R%HEAD%SHE%ERROR[k]/frequency))/100'")  "'nint(vshe[i]*10)|10'"  "'nint(speak[i]*1000)/1000'"  "'nint(R%HEAD%SHE%NSHELL[l]*100)/100'"("'nint(R%HEAD%SHE%ERROR[l]*100)/100'")" 3 /box 7
 	next
 	for i 1 to ncom
 		visu 'i' /pen 6
