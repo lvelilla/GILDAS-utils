@@ -45,7 +45,7 @@
 !	#8	F12.4   - RMS ('msigma' from last base command) [K]
 !	#9-10	2xF7.2  - Input Velocity range guess ('mwin[1]' 'mwin[2]') [km/s]
 !	#11	F7.2	- Window width as abs(mwin[1]-mwin[2]) ('wwid' computed) [km/s]
-!	#12-13 	2xF7.2	- Computed emission range based on 3-sigma criterion 5-channel average (ver[1]-ver[2]) [km/s]
+!	#12-13 	2xF7.2	- Computed emission range based on 3-sigma criterion 3-channel average (ver[1]-ver[2]) [km/s]
 !	#14	F7.2	- FWZI from (#13-#12) ('fwzi' computed) [km/s]
 !	#15	F7.2    - Velocity resolution of the spectrum ('R%HEAD%SPE%VRES' absolute value) [km/s]
 !	#16	F12.4   - Maximum temperature within the window ('tmax' computed) [K]
@@ -163,7 +163,7 @@ set win none
 set win mwin[1] mwin[2]
 base 0 
 for i mch[1]-6 to int(r%head%spe%rchan) 
-	compute erng[1] mean ry['i':'i+4']
+	compute erng[1] mean ry['i':'i+2']
 	say channel 'i' sigma 'sigma' mean 'erng[1]' 3sigma '3*sigma' !DEBUG
 	if erng[1].ge.(3*sigma) then
 		let cher[1] i
@@ -172,7 +172,7 @@ for i mch[1]-6 to int(r%head%spe%rchan)
 	endif
 next
 for i mch[2]+6 to int(r%head%spe%rchan) by -1
-	compute erng[2] mean ry['i':'i+4']
+	compute erng[2] mean ry['i':'i+2']
 	say channel 'i' sigma 'sigma' mean 'erng[1]' 3sigma '3*sigma' !DEBUG
 	if erng[2].ge.(3*sigma) then
 		let cher[2] i
