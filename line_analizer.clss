@@ -178,8 +178,8 @@ next
 let fwzi abs((erng[2]-erng[1])*r%head%spe%vres)
 !
 ! Compute temperatures:
-compute tmax max ry['erng[1]':'erng[2]']		!Max temp. within the whole window (using fwzi limits)
-for i erng[1] to erng[2]
+compute tmax max ry['cher[1]':'cher[2]']		!Max temp. within the whole window (using fwzi limits)
+for i cher[1] to cher[2]
 	if ry[i].eq.tmax then
 		let chtmax i
 		let vtmax rx[i]
@@ -193,13 +193,12 @@ let tvsy ry[int(r%head%spe%rchan)]
 !
 ! Compute the area as the sum of rectangles between the emission range limits:
 set win none
-let set%win%las%wind1[1] ver[1]
-let set%win%las%wind2[1] ver[2]
+set win ver[1] ver[2]
 base 0 
 let msigma sigma
 let marea area
 let rarea 0
-for i erng[1] to erng[2]
+for i cher[1] to cher[2]
 	let rarea rarea+ry[i]
 next
 let nchan fwzi/abs(r%head%spe%vres)			!Number of integrated channels
