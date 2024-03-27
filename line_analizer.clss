@@ -149,8 +149,8 @@ if (mwin[1].eq.0).and.(mwin[2].eq.0) then
 	say ""
 	say "Select velocity limits for the emission line to analyze..." 
 	set win
-	let set%las%wind1[1] mwin[1]
-	let set%las%wind2[1] mwin[2]
+	let mwin[1] set%las%wind1[1] 
+	let mwin[2] set%las%wind2[1] 
 endif
 let wwid abs(mwin[1]-mwin[2])
 ! * Compute the channels corresponding to the mwin input values:
