@@ -259,10 +259,10 @@ if fmet.eq."s" then
 	visu /pen 7
 	pause "Improve the fit manually or continue..."
 	for i 1 to ncom
-		let j 4*i-3
-		let k 4*i-2
-		let h 4*i-1
-		let l 4*i
+		!let j 4*i-3
+		!let k 4*i-2
+		!let h 4*i-1
+		!let l 4*i
 		let fwzl[i] 2*R%HEAD%SHE%NSHELL[h]*cspe/frequency
 		let vshe[i] cspe*fwzl/(frequency+R%HEAD%SHE%NSHELL[k])/2
 		let speak[i] R%HEAD%SHE%NSHELL[j]/fwzl/(1+R%HEAD%SHE%NSHELL[l]/3)
@@ -283,7 +283,7 @@ if fmet.eq."s" then
 	greg\set char 0.5
 	pen 0
 	greg\set box_loc 4 24 9.4 19.4
-	set mode x frequency-(frequency*wwid*3/cspe) frequency+(frequency*wwid*3/cspe)
+	set mode x frequency-(frequency*wwid*5/cspe) frequency+(frequency*wwid*5/cspe)
 	pen 0
 	plot
 	pen 9
