@@ -250,7 +250,7 @@ if fmet.eq."s" then
 	get
 	set unit f v
 	modify fre 'ufre'
-	set mode x 'frequency-(frequency*fwzi*1/cspe)' 'frequency+(frequency*fwzi*1/cspe)'
+	set mode x 'frequency-(frequency*fwzi*2/cspe)' 'frequency+(frequency*fwzi*2/cspe)'
 	plot
 	base last
 	say ""
