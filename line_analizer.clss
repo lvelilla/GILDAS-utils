@@ -159,8 +159,12 @@ let mch[1] ((mwin[1]-r%head%spe%voff)/r%head%spe%vres)+r%head%spe%rchan
 let mch[2] ((mwin[2]-r%head%spe%voff)/r%head%spe%vres)+r%head%spe%rchan
 !
 ! Compute the emission range and FWZI using 3*sigma criteria between mch[1,2]:
+set win none
+set win mwin[1] mwin[2]
+base 0 
 for i mch[1]-6 to int(r%head%spe%rchan) 
 	compute erng[1] mean ry['i':'i+4']
+	say 'sigma' 'erng[1]' '3*sigma'
 	if erng[1].ge.(3*sigma) then
 		let cher[1] i
 		let ver[1] rx[i]
