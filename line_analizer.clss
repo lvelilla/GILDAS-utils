@@ -238,6 +238,7 @@ draw mask
 hard 'int(ufre)'_linana.eps /dev eps color /overwrite
 hard 'int(ufre)'_linana.pdf /dev eps color /overwrite
 greg\set char 0.6
+pause "debug"
 !
 ! LINE FITTING:
 !
