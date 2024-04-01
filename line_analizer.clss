@@ -120,8 +120,8 @@ let fmet &4
 let ncom &5
 
 ! ADDITIONAL VARIABLES FOR FITTING:
-define double gpeak[ncom] speak[ncom] vshe[ncom] fwzl[ncom]
-define double sarea[ncom] esarea[ncom] sfreq[ncom] esfreq[ncom] efwzl[ncom]
+define double gpeak[ncom] speak[ncom] vshe[ncom] fwzl[ncom] sarea[ncom] sfreq[ncom]
+define double esarea[ncom] esfreq[ncom] efwzl[ncom] evshe[ncom]
 
 ! *** PROGRAM BODY:
 ! Computation for the name of the output file:
