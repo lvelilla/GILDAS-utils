@@ -270,7 +270,7 @@ if fmet.eq."s" then
 		let fwzl[i] 2*r%head%she%nshell[inth]
 		let efwzl[i] 2*r%head%she%error[inth]
 		let vshe[i] r%head%she%nshell[inth]*cspe/sfreq[i]
-		let evshe[i] sqrt(((cspe/sfreq[i])**2)*((r%head%she%error[inth]*cspe/sfreq[i])**2))+(((fwzl[i]*cspe/2/sfreq[i]**2)**2)*((r%head%she%error[intk]*cspe/sfreq[i])**2)))
+		let evshe[i] sqrt(((cspe*efwzl[i]/sfreq[i])**2)+((fwzl[i]*cspe*efwzl[i]/((sfreq[i])**2))**2))
 		let sarea[i] R%HEAD%SHE%NSHELL[intj]*cspe/sfreq[i]
 		let esarea[i] R%HEAD%SHE%ERROR[intj]*cspe/sfreq[i]
 		let speak[i] R%HEAD%SHE%NSHELL[intj]/r%head%she%nshell[inth]/2/(1+(R%HEAD%SHE%NSHELL[intl]/3))
