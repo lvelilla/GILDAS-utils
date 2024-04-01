@@ -267,8 +267,8 @@ if fmet.eq."s" then
 		let intl 4*i	!r%head%spe%nshell index for horn-to-center
 		let sfreq[i] frequency+R%HEAD%SHE%NSHELL[intk]
 		let esfreq[i] R%HEAD%SHE%ERROR[intk]
-		let fwzl[i] 2*r%head%she*nshell[inth]
-		let efwzl[i] 2*r%head%she*error[inth]
+		let fwzl[i] 2*r%head%she%nshell[inth]
+		let efwzl[i] 2*r%head%she%error[inth]
 		let vshe[i] r%head%she%nshell[inth]*cspe/sfreq[i]
 		let evshe[i] sqrt(((cspe/sfreq[i])**2)*((r%head%she%error[inth]*cspe/sfreq[i])**2))+(((fwzl[i]*cspe/2/sfreq[i]**2)**2)*((r%head%she%error[intk]*cspe/sfreq[i])**2)))
 		let sarea[i] R%HEAD%SHE%NSHELL[intj]*cspe/sfreq[i]
