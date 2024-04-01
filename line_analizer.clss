@@ -145,7 +145,11 @@ modify frequency 'ufre'
 set mode x 'velocity-200' 'velocity+200'
 plot
 say "" ; 
-pause "SET MASKS, SMOOTH and do BASE 0. CONTINUE..."
+say "SET MASKS AROUND THE NON-TARGET LINES AND BAD CHANNELS"
+say "SMOOTH OR RESAMPLE THE SPECTRA IF NEEDED, CORRECT BASELINE ETC..."
+say "NEXT STEP WILL BE TO SET A WINDOW AROUND THE TARGET LINE"
+say "FOR BASELINE FITTING (DEGREE 0) TO OBTAIN THE NOISE RMS=sigma"
+pause "CONTINUE..."
 set win none
 if (mwin[1].eq.0).and.(mwin[2].eq.0) then
 	say ""
@@ -166,7 +170,7 @@ set win mwin[1] mwin[2]
 base 0 
 for i mch[1]-6 to int(r%head%spe%rchan) 
 	compute erng[1] mean ry['i':'i+2']
-	say channel 'i' sigma 'sigma' mean 'erng[1]' 3sigma '3*sigma' !DEBUG
+	!say channel 'i' sigma 'sigma' mean 'erng[1]' 3sigma '3*sigma' !DEBUG
 	if erng[1].ge.(3*sigma) then
 		let cher[1] i
 		let ver[1] rx[i]
@@ -176,7 +180,7 @@ next
 say ""
 for i mch[2]+6 to int(r%head%spe%rchan) by -1
 	compute erng[2] mean ry['i':'i+2']
-	say channel 'i' sigma 'sigma' mean 'erng[2]' 3sigma '3*sigma' !DEBUG
+	!say channel 'i' sigma 'sigma' mean 'erng[2]' 3sigma '3*sigma' !DEBUG
 	if erng[2].ge.(3*sigma) then
 		let cher[2] i
 		let ver[2] rx[i]
@@ -242,7 +246,6 @@ draw mask
 hard 'int(ufre)'_linana.eps /dev eps color /overwrite
 hard 'int(ufre)'_linana.pdf /dev pdf color /overwrite
 greg\set char 0.6
-pause "debug"
 !
 ! LINE FITTING:
 !
@@ -259,6 +262,7 @@ if fmet.eq."s" then
 	mini
 	ite 6
 	visu /pen 7
+	say ""; say ""
 	pause "Improve the fit manually or continue..."
 	for i 1 to ncom
 		let intj 4*i-3	!r%head%spe%nshell index for area in K*MHz
@@ -285,7 +289,7 @@ if fmet.eq."s" then
 		f12.4 f7.2 f7.2 f7.2 f7.2 f8.3 f8.3 f12.4
 	next
 	sic out
-	pause "debug now!"
+	!
 	! Image SHELL:
 	clear
 	set format brief
@@ -338,7 +342,7 @@ endif
 sic out
 
 
-
+!NOT IMPLEMENTED YET:
 !METHOD GAUSS IMPLEMENT
 !
 !Fitting part:
@@ -480,5 +484,4 @@ sic out
 !
 
 
-pause "eop debug"
-
+!EOP
