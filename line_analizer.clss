@@ -278,7 +278,7 @@ if fmet.eq."s" then
 		say ufre R%HEAD%SPE%VOFF R%HEAD%CAL%BEEFF R%HEAD%CAL%FOEFF marea rarea earea msigma -
 		mwin[1] mwin[2] wwid ver[1] ver[2] fwzi R%HEAD%SPE%VRES tmax -
 		vtmax tvsy tsix tpeak tavmax sarea[i] esarea[i] sfreq[i] -
-		esfreq[i] fwzl[i] efwzl[i] vshe[i] evshe[i] R%HEAD%SHE%NSHELL[4] R%HEAD%SHE%ERROR speak[i] -
+		esfreq[i] fwzl[i] efwzl[i] vshe[i] evshe[i] R%HEAD%SHE%NSHELL[intl] R%HEAD%SHE%ERROR[intl] speak[i] -
 		/format f12.4 f6.1 f6.2 f6.2 f12.4 f12.4 f12.4 f12.4 -
 		f7.2 f7.2 f7.2 f7.2 f7.2 f7.2 f7.2 f12.4 - 
 		f7.2 f12.4 f12.4 f12.4 f12.4 f12.4 f12.4 f12.4 -
