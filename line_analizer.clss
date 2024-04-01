@@ -121,6 +121,7 @@ let ncom &5
 
 ! ADDITIONAL VARIABLES FOR FITTING:
 define double gpeak[ncom] speak[ncom] vshe[ncom] fwzl[ncom]
+define double sarea[ncom] esarea[ncom] sfreq[ncom] efwzl[ncom]
 
 ! *** PROGRAM BODY:
 ! Computation for the name of the output file:
