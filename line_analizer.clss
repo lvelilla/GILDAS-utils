@@ -262,7 +262,8 @@ if fmet.eq."s" then
 	mini
 	ite 6
 	visu /pen 7
-	say ""; say ""
+	say " " 
+	say " "
 	pause "Improve the fit manually or continue..."
 	for i 1 to ncom
 		let intj 4*i-3	!r%head%spe%nshell index for area in K*MHz
