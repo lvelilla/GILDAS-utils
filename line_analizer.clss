@@ -273,7 +273,7 @@ if fmet.eq."s" then
 		let evshe[i] sqrt(((cspe*efwzl[i]/sfreq[i])**2)+((fwzl[i]*cspe*efwzl[i]/((sfreq[i])**2))**2))
 		let sarea[i] R%HEAD%SHE%NSHELL[intj]*cspe/sfreq[i]
 		let esarea[i] R%HEAD%SHE%ERROR[intj]*cspe/sfreq[i]
-		let speak[i] R%HEAD%SHE%NSHELL[intj]/r%head%she%nshell[inth]/2/(1+(R%HEAD%SHE%NSHELL[intl]/3))
+		let speak[i] R%HEAD%SHE%NSHELL[intj]/(r%head%she%nshell[inth]*2)*(1/(1+(R%HEAD%SHE%NSHELL[intl]/3)))
 		sic out 'outf[bch:pch]'p'outf[cont:]'.dat append
 		say ufre R%HEAD%SPE%VOFF R%HEAD%CAL%BEEFF R%HEAD%CAL%FOEFF marea rarea earea msigma -
 		mwin[1] mwin[2] wwid ver[1] ver[2] fwzi R%HEAD%SPE%VRES tmax -
@@ -285,6 +285,7 @@ if fmet.eq."s" then
 		f12.4 f7.2 f7.2 f7.2 f7.2 f8.3 f8.3 f12.4
 	next
 	sic out
+	pause "debug now!"
 	! Image SHELL:
 	clear
 	set format brief
