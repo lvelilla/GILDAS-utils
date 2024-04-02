@@ -35,7 +35,7 @@
 !	#1	F12.4   - Input rest frequency ('ufre' input) [MHz]
 !	#2	F6.2    - Main beam efficiency ('R%HEAD%CAL%BEEFF': Beff)
 !	#3	F6.2    - Forward efficiency ('R%HEAD%CAL%FOEFF': Feff)
-!	#4	F12.4   - Integrated intensity ('barea' after base command) [K*km/s]
+!	#4	F12.4   - Integrated intensity ('marea' after base command) [K*km/s]
 !	#5	F12.4   - Uncertainty of the integrated intensity ('earea' computed) [K*km/s]
 !	#6	F12.4   - RMS ('sigma' after base command) [K]
 !	#7-8	2xF7.2  - Velocity range for that integrated intensity ('lwin' 'rwin' input) [km/s]
