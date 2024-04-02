@@ -147,16 +147,26 @@ say "SET MASKS AROUND THE NON-TARGET LINES AND BAD CHANNELS"
 say "SMOOTH OR RESAMPLE THE SPECTRA IF NEEDED, CORRECT BASELINE ETC..."
 say "NEXT STEP WILL BE TO SET A WINDOW AROUND THE TARGET LINE"
 say "FOR BASELINE FITTING (DEGREE 0) TO OBTAIN THE NOISE RMS=sigma"
+say ""
+say ""
 pause "CONTINUE..."
 set win none
 if (mwin[1].eq.0).and.(mwin[2].eq.0) then
 	say ""
 	say "Select velocity limits for the emission line to analyze..." 
+	say "LEFT WINDOW FIRST, RIGHT WINDOW LAST (Vleft<Vright)"
+	say ""
 	set win
-	let mwin[1] set%las%wind1[1] 
-	let mwin[2] set%las%wind2[1] 
+	if R%HEAD%SPE%VRES.gt.0 then
+		let mwin[1] set%las%wind1[1] 
+		let mwin[2] set%las%wind2[1]
+	else
+		let mwin[1] set%las%wind2[1] 
+		let mwin[2] set%las%wind1[1]
+	endif
 endif
 let wwid abs(mwin[1]-mwin[2])
+!
 ! * Compute the channels corresponding to the mwin input values:
 ! Values are good for both cases Delta_v>0 and <0:
 let mch[1] ((mwin[1]-r%head%spe%voff)/r%head%spe%vres)+r%head%spe%rchan
