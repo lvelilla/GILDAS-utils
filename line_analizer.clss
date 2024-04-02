@@ -196,6 +196,7 @@ for i mch[2]+6 to int(r%head%spe%rchan) by -1
 	endif
 next
 let fwzi abs((cher[2]-cher[1])*r%head%spe%vres)
+pause "debug"
 !
 ! Compute temperatures:
 compute tmax max ry['cher[1]':'cher[2]']		!Max temp. within the whole window (using fwzi limits)
