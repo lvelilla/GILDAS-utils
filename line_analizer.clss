@@ -10,28 +10,30 @@
 ! It is based on CLASS internal language and functionalities.
 ! 
 ! USAGE:
-! @line_analizer ufre lwin rwin method
+! @line_analizer ufre mwin[1] mwin[2] method ncom
 !
 ! e.g.: @line_analizer.clss 115230 -100 100 g
 !
 ! INPUT:
 ! ufre: Rest laboratory frequency of the line
 ! mwin[2]: User guess in velocity units for the velocity limits of the line
-!
-! method: fitting method can be "g" for gaussian and "s" for shell
+! method: fitting method can be "s" for shell, "g" for Gaussian 	(NOTE: Gaussian mode not working yet)
+! ncom: number of components for the line fitting 			(NOTE: Use 1 for now)
 !
 ! RESULT:
-! Creates files with names based on "ufre" containing the results  
-! It will append entries if the file exists.
+! Creates files with names based on "ufre" containing the results as ascii 
+! files and plots. In the case of the data (ascii) file, the routine will
+! append entries if the file already exists.
 !
 ! NOTES:
 ! Be careful in case there are line blends
 !
-! Note_1: If the velocity range is 0 0 lwin/rwin will be selected with cursor.
+! Note_1: If the velocity range is 0 0 mwin will be selected with cursor.
 ! Note_2: Systemic velocity is not manipulated on the input spectra.
 ! Note_3: forward efficiencies are not always correctly saved in the headers
-! Note_4: consider the units of the input spectrum it is in Ta*, Tmb, Jy/K units for your results
-! Note_5: the routine expects a spectrum with an already fitted baseline but you have a chance to subtract one
+! Note_4: expected spectral units are K, km/s and MHz. Be aware about your input units (Ta*, Tmb, Jy/K) for correct results
+! Note_5: the routine expects a spectrum with an already fitted baseline at the current spectral resolution 
+!	  but you will have the chance to subtract one before measurment
 !
 ! OUPUT: CARE ABOUT UNITS ... input spectrum K vs MHz and K vs km/s are expected
 !
@@ -71,13 +73,9 @@
 !
 ! FUTURE WORK:
 ! - Deal with absorptions (FWZI estimation)					NOT IMPLEMENTED
-! - Correct the calculation of the FWZI (sigma criterion)			NOT WORKING
-! - Multi-fit (multiple components in Gaussian/Shell)				WORKING: available in Gaussian mode
+! - Multi-fit (multiple components in Gaussian/Shell)				NOT IMPLEMENTED
 ! - Fit method 'both': headers and images					NOT IMPLEMENTED
 ! - Save image									BETA
-! - Header (column description and units) of the file: print with append?	BETA
-! - Draw masks									NOT WORKING IN SHELL METHOD
-! - Syntax error: writing the header of the file in method shell lines 299-300	TO RESOLVE
 !
 !
 !*****************
