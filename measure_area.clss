@@ -115,6 +115,7 @@ let wwid abs(mwin[1]-mwin[2])
 ! Values are good for both cases Delta_v>0 and <0:
 let mch[1] ((mwin[1]-r%head%spe%voff)/r%head%spe%vres)+r%head%spe%rchan
 let mch[2] ((mwin[2]-r%head%spe%voff)/r%head%spe%vres)+r%head%spe%rchan
+pause "DBG"
 !
 !* Now we will force limits so mch[1] is < mch[2]
 if mch[1].gt.mch[2] then
