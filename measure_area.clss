@@ -107,31 +107,23 @@ if (mwin[1].eq.0).and.(mwin[2].eq.0) then
 else
 	set win 'mwin[1]' 'mwin[2]'
 endif
-!* Calculate in num of channels the distance between each limit and the reference channel:
-let mch[1] abs((r%head%spe%voff-set%las%wind1[1])/(r%head%spe%vres))
-let mch[2] abs((r%head%spe%voff-set%las%wind2[1])/(r%head%spe%vres))
-!* Different cases if: velocity decreases/increases with channel and limits are <> than ref. channel
-for i 1 to 2
-	!* Case 1: velocity decreases with channel
-	if (r%head%spe%vres.lt.0) then 
-		!* Sub-case: the limit has vel>vref	
-		if (mwin[i].gt.r%head%spe%voff) then
-			let mch[i] int(r%head%spe%rchan-mch[i])
-		!* Sub-case: the limit has vel<vref
-		else
-			let mch[i] int(r%head%spe%rchan+mch[i])
-		endif
-	!* Case 2: velocity increases with channel
-	else
-		!* Sub-case: the limit has vel>vref	
-		if (mwin[i].gt.r%head%spe%voff) then
-			let mch[i] int(r%head%spe%rchan+mch[i])
-		!* Sub-case: the limit has vel<vref
-		else
-			let mch[i] int(r%head%spe%rchan-mch[i])
-		endif
-	endif
-next
+
+if (mwin[1].eq.0).and.(mwin[2].eq.0) then
+	say ""
+	say "Select velocity limits for the emission line to analyze..." 
+	say "LEFT WINDOW FIRST, RIGHT WINDOW LAST (Vleft<Vright)"
+	say ""
+	set win
+else
+	set win 'mwin[1]' 'mwin[2]'
+endif
+let wwid abs(mwin[1]-mwin[2])
+!
+! * Compute the channels corresponding to the mwin input values:
+! Values are good for both cases Delta_v>0 and <0:
+let mch[1] ((mwin[1]-r%head%spe%voff)/r%head%spe%vres)+r%head%spe%rchan
+let mch[2] ((mwin[2]-r%head%spe%voff)/r%head%spe%vres)+r%head%spe%rchan
+!
 !* Now we will force limits so mch[1] is < mch[2]
 if mch[1].gt.mch[2] then
 	let aux1 mch[1]
