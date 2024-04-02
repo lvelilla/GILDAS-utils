@@ -106,6 +106,8 @@ if (mwin[1].eq.0).and.(mwin[2].eq.0) then
 	say "LEFT WINDOW FIRST, RIGHT WINDOW LAST (Vleft<Vright)"
 	say ""
 	set win
+	let mwin[1] set%las%wind1[1]
+	let mwin[2] set%las%wind2[1]
 else
 	set win 'mwin[1]' 'mwin[2]'
 endif
