@@ -324,7 +324,7 @@ if fmet.eq."s" then
 		let intk 4*i-2
 		let inth 4*i-1
 		let intl 4*i
-		greg\draw text 0.5 -5.2-(i*0.5) 'nint(1000*sarea[i])|1000'"("'nint(1000*esarea[i])/1000'")  "'nint(100*(velocity-(cspe*R%HEAD%SHE%NSHELL[intk]/frequency)))/100'"("'nint(100*(cspe*R%HEAD%SHE%ERROR[intk]/frequency))/100'")  "'nint(vshe[i]*10)|10'"  "'nint(speak[i]*1000)/1000'"" 3 /box 7
+		greg\draw text 0.5 -5.2-(i*0.5) 'nint(1000*sarea[i])|1000'"("'nint(1000*esarea[i])/1000'")  "'nint(100*(velocity-(cspe*R%HEAD%SHE%NSHELL[intk]/frequency)))/100'"("'nint(100*(cspe*R%HEAD%SHE%ERROR[intk]/frequency))/100'")  "'nint(vshe[i]*10)|10'"           "'nint(speak[i]*1000)/1000'"" 3 /box 7
 	next
 	for i 1 to ncom
 		visu 'i' /pen 6
