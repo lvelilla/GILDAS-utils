@@ -75,7 +75,8 @@ pen 0 /dash 1 /wei 2
 
 !*** INPUT Variables:
 define double lfre
-define real mwin[2] mch[2]
+define real mwin[2] 
+define int mch[2]
 let lfre &1
 let mwin[1] &2
 let mwin[2] &3
@@ -102,15 +103,6 @@ base 0 /plot
 if (mwin[1].eq.0).and.(mwin[2].eq.0) then
 	say ""
 	say "Select the limits of the window that you want to measure"
-	say ""
-	set win
-else
-	set win 'mwin[1]' 'mwin[2]'
-endif
-
-if (mwin[1].eq.0).and.(mwin[2].eq.0) then
-	say ""
-	say "Select velocity limits for the emission line to analyze..." 
 	say "LEFT WINDOW FIRST, RIGHT WINDOW LAST (Vleft<Vright)"
 	say ""
 	set win
