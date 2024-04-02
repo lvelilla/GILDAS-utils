@@ -153,7 +153,7 @@ say 'lfre' 'R%HEAD%CAL%BEEFF' 'R%HEAD%CAL%FOEFF' 'marea' 'earea' -
 /format F12.4 F6.2 F6.2 F12.4 F12.4 F12.4 F7.2 F7.2 -
 F7.2 F7.2
 sic out
-
+pause "debug"
 !*** SAVE PLOT:
 clear
 set format brief
