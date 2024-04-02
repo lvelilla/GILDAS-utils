@@ -190,13 +190,12 @@ for i mch[2]+6 to int(r%head%spe%rchan) by -1
 	compute erng[2] mean ry['i':'i+2']
 	!say channel 'i' sigma 'sigma' mean 'erng[2]' 3sigma '3*sigma' !DEBUG
 	if erng[2].ge.(3*sigma) then
-		let cher[2] i
-		let ver[2] rx[i]
+		let cher[2] i+2
+		let ver[2] rx[i+2]
 		break
 	endif
 next
 let fwzi abs((cher[2]-cher[1])*r%head%spe%vres)
-pause "debug"
 !
 ! Compute temperatures:
 compute tmax max ry['cher[1]':'cher[2]']		!Max temp. within the whole window (using fwzi limits)
@@ -255,6 +254,8 @@ draw mask
 hard 'int(ufre)'_linana.eps /dev eps color /overwrite
 hard 'int(ufre)'_linana.pdf /dev pdf color /overwrite
 greg\set char 0.6
+pause "debug"
+
 !
 ! LINE FITTING:
 !
