@@ -181,6 +181,7 @@ greg\draw text 0.5 -1.6 "AREA= "'nint(marea*1000)|1000'" \s+ "'nint(1000*earea)/
 pen 0
 draw mask
 hard 'int(lfre)'_base.eps /dev eps color /overwrite
+hard 'int(lfre)'_base.pdf /dev pdf color /overwrite
 greg\set char 0.6
 
 
