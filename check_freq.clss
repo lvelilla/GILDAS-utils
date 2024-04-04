@@ -1,1 +1,54 @@
+! Programmed: Luis Velilla-Prieto 
+! Date: 04/apr/2024
+!
+! HELP:
+! Routine to inspect the spectrum around a given frequency in CLASS
+!
+! USAGE:
+! 	@ check_freq.clss ifr 
+! 
+! E.g.:@ check_freq.clss 115230
+!
+! SETTINGS:
+!	ifr: Frequency to revise
+!
+! RESULT:
+! If found, all spectra covering the requested frequency will be loaded in the index
+! If only one spectrum is found, the region around that frequency will be plotted
+! In case that several spectra are found, the routine will try to make a STITCH /nocheck
+! and plot that region
+!
+! NOTES:
+! 
+! OUPUT:
+!
+! FUTURE WORK:
+!
+!
+!*****************
+!* START PROGRAM *
+!*****************
+!
+clear
+set align freq comp
+set unit f v
+define double ifr
+let ifr &1
+set fre *; set tel *; set line *; find
+set fre ifr; find
 
+if found.eq.1 then
+  get f
+  
+else if found.gt.1 then
+  stit /noc
+else if found.eq.0 then
+  say ""
+  say "NO SPECTRUM CONTAINING THAT FREQUENCY WAS FOUND"
+  say ""
+  exit
+endif
+set mode x ifr-300 ifr+300 
+pl
+
+!EOP
