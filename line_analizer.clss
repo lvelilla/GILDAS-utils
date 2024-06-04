@@ -105,6 +105,7 @@ define double tmax vtmax tvsy tsix tpeak tavmax
 define real wwid fwzi marea rarea earea msigma
 define integer mch[2] chtmax ncom bch pch cont iaux1 nchan
 define integer intj inth intl intk
+define logical lboo rboo
 define char*1 fmet
 define char*16 outf
 define double cspe
@@ -173,6 +174,8 @@ let mch[1] ((mwin[1]-r%head%spe%voff)/r%head%spe%vres)+r%head%spe%rchan
 let mch[2] ((mwin[2]-r%head%spe%voff)/r%head%spe%vres)+r%head%spe%rchan
 !
 ! Compute the emission range and FWZI using 3*sigma criteria between mch[1,2]:
+let lboo .FALSE.
+let rboo .FALSE.
 set win none
 set win mwin[1] mwin[2]
 base 0 
@@ -182,6 +185,7 @@ for i mch[1]-6 to int(r%head%spe%rchan)
 	if erng[1].ge.(3*sigma) then
 		let cher[1] i
 		let ver[1] rx[i]
+		let lboo .TRUE.
 		break
 	endif
 next
@@ -192,9 +196,30 @@ for i mch[2]+6 to int(r%head%spe%rchan) by -1
 	if erng[2].ge.(3*sigma) then
 		let cher[2] i+2
 		let ver[2] rx['i+2']
+                let rboo .TRUE. 
 		break
 	endif
 next
+if lboo.eq.NO
+	say ""
+	say "************ WARNING ***********"
+	say "No 3-channel-average satisfied the condition >=3sigma for the LEFT LIMIT"
+	say "Proceeding with the windows limit that has been set manually before"
+	say "************ WARNING ***********"
+	say ""
+	let cher[1] mch[1]
+	let ver[1] rx['mch[1]']
+endif
+if rboo.eq.NO
+	say ""
+	say "************ WARNING ***********"
+	say "No 3-channel-average satisfied the condition >=3sigma for the RIGHT LIMIT"
+	say "Proceeding with the windows limit that has been set manually before"
+	say "************ WARNING ***********"
+	say ""
+	let cher[2] mch[2]
+	let ver[2] rx['mch[2]']
+endif
 let fwzi abs((cher[2]-cher[1])*r%head%spe%vres)
 !
 ! Compute temperatures:
