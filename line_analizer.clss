@@ -169,7 +169,8 @@ if (mwin[1].eq.0).and.(mwin[2].eq.0) then
 else
 	say ""
 	say "Calculations will be made using your manually entered values as emission limits"
-	say ""
+	say "instead of computing the 3*sigma limits"
+say ""
 	let mancom .TRUE.
 endif
 let wwid abs(mwin[1]-mwin[2])
