@@ -105,11 +105,12 @@ define double tmax vtmax tvsy tsix tpeak tavmax
 define real wwid fwzi marea rarea earea msigma
 define integer mch[2] chtmax ncom bch pch cont iaux1 nchan
 define integer intj inth intl intk
-define logical lboo rboo
+define logical lboo rboo mancom
 define char*1 fmet
 define char*16 outf
 define double cspe
 let cspe 2.99792e5
+let mancom .FALSE.
 
 ! INPUT READING:
 let ufre &1
@@ -165,6 +166,11 @@ if (mwin[1].eq.0).and.(mwin[2].eq.0) then
 		let mwin[1] set%las%wind2[1] 
 		let mwin[2] set%las%wind1[1]
 	endif
+else
+	say ""
+	say "Calculations will be made using your manually entered values as emission limits"
+	say ""
+	let mancom .TRUE.
 endif
 let wwid abs(mwin[1]-mwin[2])
 !
@@ -172,52 +178,62 @@ let wwid abs(mwin[1]-mwin[2])
 ! Values are good for both cases Delta_v>0 and <0:
 let mch[1] ((mwin[1]-r%head%spe%voff)/r%head%spe%vres)+r%head%spe%rchan
 let mch[2] ((mwin[2]-r%head%spe%voff)/r%head%spe%vres)+r%head%spe%rchan
-!
-! Compute the emission range and FWZI using 3*sigma criteria between mch[1,2]:
-let lboo .FALSE.
-let rboo .FALSE.
+! 
+! * Initial baseline:
 set win none
 set win mwin[1] mwin[2]
 base 0 
-for i mch[1]-6 to int(r%head%spe%rchan) 
-	compute erng[1] mean ry['i':'i+2']
-	!say channel 'i' sigma 'sigma' mean 'erng[1]' 3sigma '3*sigma' !DEBUG
-	if erng[1].ge.(3*sigma) then
-		let cher[1] i
-		let ver[1] rx[i]
-		let lboo .TRUE.
-		break
-	endif
-next
-say ""
-for i mch[2]+6 to int(r%head%spe%rchan) by -1
-	compute erng[2] mean ry['i':'i+2']
-	!say channel 'i' sigma 'sigma' mean 'erng[2]' 3sigma '3*sigma' !DEBUG
-	if erng[2].ge.(3*sigma) then
-		let cher[2] i+2
-		let ver[2] rx['i+2']
-                let rboo .TRUE. 
-		break
-	endif
-next
-if lboo.eq.NO
+!
+! * Compute the emission range and FWZI using 3*sigma criteria between mch[1,2]:
+! * Only done if input limits were 0 and 0:
+if mancom.eq.NO then
+	let lboo .FALSE.
+	let rboo .FALSE.
+	for i mch[1]-6 to int(r%head%spe%rchan) 
+		compute erng[1] mean ry['i':'i+2']
+		!say channel 'i' sigma 'sigma' mean 'erng[1]' 3sigma '3*sigma' !DEBUG
+		if erng[1].ge.(3*sigma) then
+			let cher[1] i
+			let ver[1] rx[i]
+			let lboo .TRUE.
+			break
+		endif
+	next
 	say ""
-	say "************ WARNING ***********"
-	say "No 3-channel-average satisfied the condition >=3sigma for the LEFT LIMIT"
-	say "Proceeding with the windows limit that has been set manually before"
-	say "************ WARNING ***********"
-	say ""
+	for i mch[2]+6 to int(r%head%spe%rchan) by -1
+		compute erng[2] mean ry['i':'i+2']
+		!say channel 'i' sigma 'sigma' mean 'erng[2]' 3sigma '3*sigma' !DEBUG
+		if erng[2].ge.(3*sigma) then
+			let cher[2] i+2
+			let ver[2] rx['i+2']
+                	let rboo .TRUE. 
+			break
+		endif
+	next
+	if lboo.eq.NO
+		say ""
+		say "************ WARNING ***********"
+		say "No 3-channel-average satisfied the condition >=3sigma for the LEFT LIMIT"
+		say "Proceeding with the windows limit that has been set manually before"
+		say "************ WARNING ***********"
+		say ""
+		let cher[1] mch[1]
+		let ver[1] rx['mch[1]']
+	endif
+	if rboo.eq.NO
+		say ""
+		say "************ WARNING ***********"
+		say "No 3-channel-average satisfied the condition >=3sigma for the RIGHT LIMIT"
+		say "Proceeding with the windows limit that has been set manually before"
+		say "************ WARNING ***********"
+		say ""
+		let cher[2] mch[2]
+		let ver[2] rx['mch[2]']
+	endif
+else
 	let cher[1] mch[1]
-	let ver[1] rx['mch[1]']
-endif
-if rboo.eq.NO
-	say ""
-	say "************ WARNING ***********"
-	say "No 3-channel-average satisfied the condition >=3sigma for the RIGHT LIMIT"
-	say "Proceeding with the windows limit that has been set manually before"
-	say "************ WARNING ***********"
-	say ""
 	let cher[2] mch[2]
+	let ver[1] rx['mch[1]']
 	let ver[2] rx['mch[2]']
 endif
 let fwzi abs((cher[2]-cher[1])*r%head%spe%vres)
