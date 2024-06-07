@@ -62,8 +62,8 @@
 !	#24-25	2xF12.4 - Signal frequency (Computed 'R%HEAD%SHE%NSHELL[2]' 'R%HEAD%SHE%ERROR[2]') [MHz]
 ! 	#26-27	2xF7.2	- FWZL and uncertainty ('fwzl' computed 'R%HEAD%SHE%ERROR[3]') [MHz]
 !	#28-29	F7.2    - Expansion velocity and uncertainty ('evshe' computed) [km/s]
-!	#29-30	2xF8.3  - Horn to center ratio ('R%HEAD%SHE%NSHELL[4]' 'R%HEAD%SHE%ERROR[4]') [-]
-!	#31	F12.4	- Peak temperature ('speak' computed) [K]
+!	#30-31	2xF8.3  - Horn to center ratio ('R%HEAD%SHE%NSHELL[4]' 'R%HEAD%SHE%ERROR[4]') [-]
+!	#32	F12.4	- Peak temperature ('speak' computed) [K]
 !
 !	> If Gaussian method selected: total number of variables will depend on the number of components
 !	#22-23	2xF12.4	- Area and uncertainty ('R%HEAD%GAU%NFIT[1]' 'R%HEAD%GAU%ERROR[1]') [K*km/s]
