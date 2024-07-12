@@ -1,14 +1,14 @@
-! Programmed: Luis Velilla-Prieto 
+! Programmed: Luis Velilla-Prieto
 ! Date: 21/Mar/2024
 !
 ! HELP:
-! This script performs a spectral line analysis to measure several parameters: 
+! This script performs a spectral line analysis to measure several parameters:
 ! Widths: FWZI, FWHM
 ! Peak temperatures: 1) Max along profile 2)Vsys-3 channel average
-! Velocity Integrated intensity (full width): 1) adding up rectangles 2) BASE functionality  
+! Velocity Integrated intensity (full width): 1) adding up rectangles 2) BASE functionality
 ! Fitting: gaussian fitting, and/or shell fitting
 ! It is based on CLASS internal language and functionalities.
-! 
+!
 ! USAGE:
 ! @line_analizer ufre mwin[1] mwin[2] method ncom
 !
@@ -21,7 +21,7 @@
 ! ncom: number of components for the line fitting 			(NOTE: Use 1 for now)
 !
 ! RESULT:
-! Creates files with names based on "ufre" containing the results as ascii 
+! Creates files with names based on "ufre" containing the results as ascii
 ! files and plots. In the case of the data (ascii) file, the routine will
 ! append entries if the file already exists.
 !
@@ -32,7 +32,7 @@
 ! Note_2: Systemic velocity is not manipulated on the input spectra.
 ! Note_3: forward efficiencies are not always correctly saved in the headers
 ! Note_4: expected spectral units are K, km/s and MHz. Be aware about your input units (Ta*, Tmb, Jy/K) for correct results
-! Note_5: the routine expects a spectrum with an already fitted baseline at the current spectral resolution 
+! Note_5: the routine expects a spectrum with an already fitted baseline at the current spectral resolution
 !	  but you will have the chance to subtract one before measurment
 !
 ! OUPUT: CARE ABOUT UNITS ... input spectrum K vs MHz and K vs km/s are expected
@@ -144,7 +144,7 @@ set unit v f
 modify frequency 'ufre'
 set mode x 'velocity-200' 'velocity+200'
 plot
-say "" ; 
+say "" ;
 say "SET MASKS AROUND THE NON-TARGET LINES AND BAD CHANNELS"
 say "SMOOTH OR RESAMPLE THE SPECTRA IF NEEDED, CORRECT BASELINE ETC..."
 say "NEXT STEP WILL BE TO SET A WINDOW AROUND THE TARGET LINE"
@@ -155,15 +155,15 @@ pause "CONTINUE..."
 set win none
 if (mwin[1].eq.0).and.(mwin[2].eq.0) then
 	say ""
-	say "Select velocity limits for the emission line to analyze..." 
+	say "Select velocity limits for the emission line to analyze..."
 	say "LEFT WINDOW FIRST, RIGHT WINDOW LAST (Vleft<Vright)"
 	say ""
 	set win
 	if R%HEAD%SPE%VRES.gt.0 then
-		let mwin[1] set%las%wind1[1] 
+		let mwin[1] set%las%wind1[1]
 		let mwin[2] set%las%wind2[1]
 	else
-		let mwin[1] set%las%wind2[1] 
+		let mwin[1] set%las%wind2[1]
 		let mwin[2] set%las%wind1[1]
 	endif
 else
@@ -179,38 +179,73 @@ let wwid abs(mwin[1]-mwin[2])
 ! Values are good for both cases Delta_v>0 and <0:
 let mch[1] ((mwin[1]-r%head%spe%voff)/r%head%spe%vres)+r%head%spe%rchan
 let mch[2] ((mwin[2]-r%head%spe%voff)/r%head%spe%vres)+r%head%spe%rchan
-! 
+!
 ! * Initial baseline:
 set win none
 set win mwin[1] mwin[2]
-base 0 
+base 0
 !
 ! * Compute the emission range and FWZI using 3*sigma criteria between mch[1,2]:
 ! * Only done if input limits were 0 and 0:
 if mancom.eq.NO then
 	let lboo .FALSE.
 	let rboo .FALSE.
-	for i mch[1]-6 to int(r%head%spe%rchan) 
-		compute erng[1] mean ry['i':'i+2']
+	for i int(r%head%spe%rchan) to mch[1]-6 by -1 	!New loop from line center to edge
+!	for i mch[1]-6 to int(r%head%spe%rchan) 				!Old loop from line edge to center
+		compute erng[1] mean ry['i-2':'i'] 						!3 channel average
 		!say channel 'i' sigma 'sigma' mean 'erng[1]' 3sigma '3*sigma' !DEBUG
-		if erng[1].ge.(3*sigma) then
-			let cher[1] i
-			let ver[1] rx[i]
+		if erng[1].lt.(3*sigma) then									!First 3-channel group with AVE<3sigma
+			compute erng[1] mean ry['i-1':'i']
+			if erng[1].ge.(3*sigma) then
+				compute erng[1] mean ry['i-2':'i-1']
+				if erng[1].ge.(3*sigma) then
+					let cher[1] i-2
+					let ver[1] rx[i-2]
+				else
+					let cher[1] i-1
+					let ver[1] rx[i-1]
+				endif
+		  else
+				if ry[i-1].ge.(3*sigma) then
+					let cher[1] i-1
+					let ver[1] rx[i-1]
+				else
+					let cher[1] i
+					let ver[1] rx[i]
+				endif
+      endif
 			let lboo .TRUE.
 			break
-		endif
-	next
+	  endif
+  next
 	say ""
-	for i mch[2]+6 to int(r%head%spe%rchan) by -1
+  for i int(r%head%spe%rchan) to mch[2]+6
 		compute erng[2] mean ry['i':'i+2']
 		!say channel 'i' sigma 'sigma' mean 'erng[2]' 3sigma '3*sigma' !DEBUG
-		if erng[2].ge.(3*sigma) then
-			let cher[2] i+2
-			let ver[2] rx['i+2']
-                	let rboo .TRUE. 
+		if erng[2].lt.(3*sigma) then									!First 3-channel group with AVE<3sigma
+			compute erng[2] mean ry['i':'i+1']
+			if erng[2].ge.(3*sigma) then
+				compute erng[2] mean ry['i+1':'i+2']
+				if erng[2].ge.(3*sigma) then
+					let cher[2] i+2
+					let ver[2] rx[i+2]
+				else
+					let cher[2] i+1
+					let ver[2] rx[i+1]
+				endif
+		  else
+				if ry[i+1].ge.(3*sigma) then
+					let cher[2] i+1
+					let ver[2] rx[i+1]
+				else
+					let cher[2] i
+					let ver[2] rx[i]
+				endif
+      endif
+			let rboo .TRUE.
 			break
-		endif
-	next
+	  endif
+  next
 	if lboo.eq.NO
 		say ""
 		say "************ WARNING ***********"
@@ -257,7 +292,7 @@ let tvsy ry[iaux1]
 ! Compute the area as the sum of rectangles between the emission range limits:
 set win none
 set win ver[1] ver[2]
-base 0 
+base 0
 let msigma sigma
 let marea area
 let rarea 0
@@ -316,7 +351,7 @@ if fmet.eq."s" then
 	mini
 	ite 6
 	visu /pen 7
-	say " " 
+	say " "
 	say " "
 	pause "Improve the fit manually or continue..."
 	for i 1 to ncom
@@ -339,7 +374,7 @@ if fmet.eq."s" then
 		vtmax tvsy tsix tpeak tavmax sarea[i] esarea[i] sfreq[i] -
 		esfreq[i] fwzl[i] efwzl[i] vshe[i] evshe[i] R%HEAD%SHE%NSHELL[intl] R%HEAD%SHE%ERROR[intl] speak[i] -
 		/format f12.4 f6.1 f6.2 f6.2 f12.4 f12.4 f12.4 f12.4 -
-		f7.2 f7.2 f7.2 f7.2 f7.2 f7.2 f7.2 f12.4 - 
+		f7.2 f7.2 f7.2 f7.2 f7.2 f7.2 f7.2 f12.4 -
 		f7.2 f12.4 f12.4 f12.4 f12.4 f12.4 f12.4 f12.4 -
 		f12.4 f7.2 f7.2 f7.2 f7.2 f8.3 f8.3 f12.4
 	next
@@ -479,7 +514,7 @@ sic out
 !	hard 'int(ufre)'_gauss.eps /dev eps color /overwrite
 !	greg\set char 0.6
 !else if fmet.eq."s" then
-!	
+!
 !else if fmet.eq."b" then
 !	set unit v f
 !	method gauss
