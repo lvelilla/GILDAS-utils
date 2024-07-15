@@ -200,15 +200,15 @@ if mancom.eq.NO then
 				compute erng[1] mean ry['i-2':'i-1']
 				if erng[1].ge.(3*sigma) then
 					let cher[1] i-2
-					let ver[1] rx[i-2]
+					let ver[1] rx['i-2']
 				else
-					let cher[1] i-1
-					let ver[1] rx[i-1]
+					let cher[1] 'i-1'
+					let ver[1] rx['i-1']
 				endif
 		  else
-				if ry[i-1].ge.(3*sigma) then
-					let cher[1] i-1
-					let ver[1] rx[i-1]
+				if ry['i-1'].ge.(3*sigma) then
+					let cher[1] 'i-1'
+					let ver[1] rx['i-1']
 				else
 					let cher[1] i
 					let ver[1] rx[i]
@@ -227,16 +227,16 @@ if mancom.eq.NO then
 			if erng[2].ge.(3*sigma) then
 				compute erng[2] mean ry['i+1':'i+2']
 				if erng[2].ge.(3*sigma) then
-					let cher[2] i+2
-					let ver[2] rx[i+2]
+					let cher[2] 'i+2'
+					let ver[2] rx['i+2']
 				else
-					let cher[2] i+1
-					let ver[2] rx[i+1]
+					let cher[2] 'i+1'
+					let ver[2] rx['i+1']
 				endif
 		  else
-				if ry[i+1].ge.(3*sigma) then
-					let cher[2] i+1
-					let ver[2] rx[i+1]
+				if ry['i+1'].ge.(3*sigma) then
+					let cher[2] 'i+1'
+					let ver[2] rx['i+1']
 				else
 					let cher[2] i
 					let ver[2] rx[i]
