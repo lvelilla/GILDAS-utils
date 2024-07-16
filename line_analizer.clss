@@ -346,8 +346,8 @@ if 'fmet.eq."s"' then
     say "FOR SHELL METHOD"
     say ""
 else
-    "NO OTHER METHODS THAN SHELL HAVE BEEN IMPLEMENTED SO FAR"
-    "QUITTING NOW..."
+    say "NO OTHER METHODS THAN SHELL HAVE BEEN IMPLEMENTED SO FAR"
+    say "QUITTING NOW..."
     exit
 endif
 
