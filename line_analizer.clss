@@ -345,6 +345,11 @@ if 'fmet.eq."s"' then
     say "NEXT STEP WILL BE TO SET A WINDOW AROUND THE TARGET LINE"
     say "FOR SHELL METHOD"
     say ""
+    method shell
+    set unit f v
+    modify fre 'ufre'
+    set mode x 'frequency-(frequency*fwzi*4/cspe)' 'frequency+(frequency*fwzi*4/cspe)'
+    plot
 else
     say "NO OTHER METHODS THAN SHELL HAVE BEEN IMPLEMENTED SO FAR"
     say "QUITTING NOW..."
@@ -357,11 +362,6 @@ pause "Continue..."
 say ""
 
 if fmet.eq."s" then
-	method shell
-	set unit f v
-	modify fre 'ufre'
-	set mode x 'frequency-(frequency*fwzi*4/cspe)' 'frequency+(frequency*fwzi*4/cspe)'
-	plot
 	say ""
 	say "Select the line for the shell fit..."
 	line ncom
