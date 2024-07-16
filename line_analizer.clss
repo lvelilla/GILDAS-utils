@@ -334,7 +334,7 @@ greg\set char 0.6
 say ""
 say ""
 
-if 'fmet'.eq."s" then
+if ('fmet'.eq.s) then
     say ""
     say "*******************"
     say "LINE FITTING: SHELL"
