@@ -199,7 +199,7 @@ if mancom.eq.NO then
 			if erng[1].ge.(3*sigma) then
 				compute erng[1] mean ry['i-2':'i-1']
 				if erng[1].ge.(3*sigma) then
-					let cher[1] i-2
+					let cher[1] 'i-2'
 					let ver[1] rx['i-2']
 				else
 					let cher[1] 'i-1'
@@ -333,12 +333,29 @@ hard 'int(ufre)'_linana.pdf /dev pdf color /overwrite
 greg\set char 0.6
 say ""
 say ""
-pause "Continue to Line Fitting..."
+
+if 'method'.eq."s" then
+    say ""
+    say "*******************"
+    say "LINE FITTING: SHELL"
+    say "*******************"
+    say ""
+    say "SET MASKS AROUND THE NON-TARGET LINES AND BAD CHANNELS"
+    say "SMOOTH OR RESAMPLE THE SPECTRA IF NEEDED, CORRECT BASELINE ETC..."
+    say "NEXT STEP WILL BE TO SET A WINDOW AROUND THE TARGET LINE"
+    say "FOR SHELL METHOD"
+    say ""
+else
+    "NO OTHER METHODS THAN SHELL HAVE BEEN IMPLEMENTED SO FAR"
+    "QUITTING NOW..."
+    exit
+endif
+
+
+
+pause "Continue..."
 say ""
-!
-! LINE FITTING:
-!
-! METHOD SHELL:
+
 if fmet.eq."s" then
 	method shell
 	set unit f v
